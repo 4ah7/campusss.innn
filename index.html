@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>John Doe - Portfolio</title>
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+body{
+margin:0;
+font-family:Poppins;
+background:#0f172a;
+color:white;
+}
+
+nav{
+display:flex;
+justify-content:space-between;
+padding:15px;
+background:#111827;
+position:sticky;
+top:0;
+}
+
+.hero{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:40px;
+}
+
+.hero img{
+width:250px;
+border-radius:15px;
+}
+
+.section-title{
+text-align:center;
+margin:30px 0;
+}
+
+.skills span{
+background:#1f2937;
+padding:5px 10px;
+margin:5px;
+display:inline-block;
+border-radius:5px;
+}
+
+.projects, .about, .skills, .blog{
+padding:40px;
+}
+
+.project-card{
+background:#1f2937;
+padding:15px;
+margin:10px 0;
+border-radius:10px;
+}
+
+input,textarea{
+width:100%;
+padding:10px;
+margin:5px 0;
+border-radius:8px;
+border:none;
+}
+
+button{
+padding:10px;
+background:#4f46e5;
+color:white;
+border:none;
+border-radius:8px;
+cursor:pointer;
+}
+
+.post{
+background:#1f2937;
+padding:10px;
+margin:10px 0;
+border-radius:10px;
+}
+</style>
+</head>
+
+<body>
+
+<nav>
+<div>JD Portfolio</div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+<div>
+<h1>Hi, I'm John Doe</h1>
+<p>Full Stack Developer</p>
+<p>I build modern web apps with backend systems.</p>
+</div>
+
+<img src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=500">
+</section>
+
+<!-- ABOUT -->
+<section class="about">
+<h2 class="section-title">About Me</h2>
+<p>I build scalable web applications using frontend + backend technologies.</p>
+
+<img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800">
+</section>
+
+<!-- SKILLS -->
+<section class="skills">
+<h2 class="section-title">Skills</h2>
+<span>HTML</span>
+<span>CSS</span>
+<span>JavaScript</span>
+<span>Firebase</span>
+</section>
+
+<!-- PROJECTS -->
+<section class="projects">
+<h2 class="section-title">Projects</h2>
+
+<div class="project-card">
+<h3>E-Commerce Platform</h3>
+<p>Full-stack shopping system with backend integration.</p>
+</div>
+
+</section>
+
+<!-- BLOG (FIREBASE BACKEND) -->
+<section class="blog">
+<h2 class="section-title">Live Blog (Realtime)</h2>
+
+<input id="title" placeholder="Post Title">
+<textarea id="content" placeholder="Write something..."></textarea>
+<button onclick="addPost()">Post</button>
+
+<div id="posts"></div>
+</section>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+getFirestore,
+collection,
+addDoc,
+onSnapshot,
+query,
+orderBy
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+
+// ✅ YOUR FIREBASE CONFIG (ADDED EXACTLY)
+const firebaseConfig = {
+  apiKey: "AIzaSyBNj63exOWvuoD1gNwpYTCZNdJarQJxu5U",
+  authDomain: "campusconnect-d5fc1.firebaseapp.com",
+  projectId: "campusconnect-d5fc1",
+  storageBucket: "campusconnect-d5fc1.firebasestorage.app",
+  messagingSenderId: "571562855908",
+  appId: "1:571562855908:web:44e5d10e4b062412c38bf1",
+  measurementId: "G-R15Q0X75XR"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ADD POST
+window.addPost = async function () {
+let title = document.getElementById("title").value;
+let content = document.getElementById("content").value;
+
+if(!title || !content) return;
+
+await addDoc(collection(db,"posts"),{
+title,
+content,
+time:Date.now()
+});
+
+document.getElementById("title").value="";
+document.getElementById("content").value="";
+};
+
+// LOAD POSTS REALTIME
+const q = query(collection(db,"posts"),orderBy("time","desc"));
+
+onSnapshot(q,(snap)=>{
+let box = document.getElementById("posts");
+box.innerHTML="";
+
+snap.forEach(doc=>{
+let d = doc.data();
+
+box.innerHTML += `
+<div class="post">
+<h3>${d.title}</h3>
+<p>${d.content}</p>
+</div>
+`;
+});
+});
+</script>
+
+</body>
+</html>
