@@ -1,210 +1,237 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>John Doe - Portfolio</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Inn | Pro</title>
 
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-<style>
-body{
-margin:0;
-font-family:Poppins;
-background:#0f172a;
-color:white;
-}
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #6366f1;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --danger: #ef4444;
+        }
 
-nav{
-display:flex;
-justify-content:space-between;
-padding:15px;
-background:#111827;
-position:sticky;
-top:0;
-}
+        body { margin: 0; font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text-main); line-height: 1.6; }
 
-.hero{
-display:flex;
-justify-content:space-between;
-align-items:center;
-padding:40px;
-}
+        /* --- NAV & AUTH --- */
+        nav {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1rem 5%; background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 1000;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .user-profile { display: flex; align-items: center; gap: 10px; }
+        .user-profile img { width: 35px; border-radius: 50%; border: 2px solid var(--accent); }
+        .btn-login { background: white; color: black; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; }
 
-.hero img{
-width:250px;
-border-radius:15px;
-}
+        /* --- SEARCH BAR --- */
+        .search-container { padding: 20px 10%; text-align: center; }
+        #searchBar {
+            width: 100%; max-width: 500px; padding: 12px 20px;
+            border-radius: 50px; border: 1px solid #334155;
+            background: var(--card-bg); color: white; outline: none;
+        }
 
-.section-title{
-text-align:center;
-margin:30px 0;
-}
+        /* --- FEED SECTION --- */
+        .blog { padding: 20px 10%; }
+        .input-group {
+            background: var(--card-bg); padding: 25px; border-radius: 20px;
+            max-width: 600px; margin: 0 auto 40px auto;
+            display: none; /* Hidden until login */
+        }
 
-.skills span{
-background:#1f2937;
-padding:5px 10px;
-margin:5px;
-display:inline-block;
-border-radius:5px;
-}
+        #posts { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
 
-.projects, .about, .skills, .blog{
-padding:40px;
-}
+        .post {
+            background: var(--card-bg); padding: 20px; border-radius: 15px;
+            transition: 0.3s; position: relative; border: 1px solid rgba(255,255,255,0.05);
+        }
+        .post:hover { transform: translateY(-5px); border-color: var(--accent); }
 
-.project-card{
-background:#1f2937;
-padding:15px;
-margin:10px 0;
-border-radius:10px;
-}
+        .post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
+        .post-header img { width: 30px; border-radius: 50%; }
+        .post-header .name { font-size: 0.85rem; font-weight: 600; }
+        .post-header .time { font-size: 0.7rem; color: var(--text-dim); }
 
-input,textarea{
-width:100%;
-padding:10px;
-margin:5px 0;
-border-radius:8px;
-border:none;
-}
+        .post-tag { font-size: 0.65rem; text-transform: uppercase; background: rgba(99, 102, 241, 0.2); color: var(--accent); padding: 3px 8px; border-radius: 4px; font-weight: 700; }
+        
+        .post-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .like-btn { cursor: pointer; color: var(--text-dim); transition: 0.2s; display: flex; align-items: center; gap: 5px; }
+        .like-btn:hover { color: var(--danger); }
+        .like-btn.active { color: var(--danger); }
 
-button{
-padding:10px;
-background:#4f46e5;
-color:white;
-border:none;
-border-radius:8px;
-cursor:pointer;
-}
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.post{
-background:#1f2937;
-padding:10px;
-margin:10px 0;
-border-radius:10px;
-}
-</style>
+        @media (max-width: 600px) { .blog { padding: 10px 5%; } }
+    </style>
 </head>
 
 <body>
 
 <nav>
-<div>JD Portfolio</div>
+    <div style="font-weight:700; color:var(--accent);">CAMPUS INN</div>
+    <div id="authArea">
+        <button class="btn-login" onclick="login()">Login with Google</button>
+    </div>
 </nav>
 
-<!-- HERO -->
-<section class="hero">
-<div>
-<h1>Hi, I'm John Doe</h1>
-<p>Full Stack Developer</p>
-<p>I build modern web apps with backend systems.</p>
+<div class="search-container">
+    <input type="text" id="searchBar" placeholder="🔍 Search campus posts..." onkeyup="filterPosts()">
 </div>
 
-<img src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=500">
-</section>
-
-<!-- ABOUT -->
-<section class="about">
-<h2 class="section-title">About Me</h2>
-<p>I build scalable web applications using frontend + backend technologies.</p>
-
-<img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800">
-</section>
-
-<!-- SKILLS -->
-<section class="skills">
-<h2 class="section-title">Skills</h2>
-<span>HTML</span>
-<span>CSS</span>
-<span>JavaScript</span>
-<span>Firebase</span>
-</section>
-
-<!-- PROJECTS -->
-<section class="projects">
-<h2 class="section-title">Projects</h2>
-
-<div class="project-card">
-<h3>E-Commerce Platform</h3>
-<p>Full-stack shopping system with backend integration.</p>
-</div>
-
-</section>
-
-<!-- BLOG (FIREBASE BACKEND) -->
 <section class="blog">
-<h2 class="section-title">Live Blog (Realtime)</h2>
+    <div class="input-group" id="editor">
+        <h4 style="margin-top:0;">Create a Post</h4>
+        <input id="title" placeholder="What's the headline?">
+        <select id="category">
+            <option value="General">General</option>
+            <option value="Exam">Exam News</option>
+            <option value="Event">Events</option>
+            <option value="Lost">Lost & Found</option>
+        </select>
+        <textarea id="content" placeholder="Tell the campus more..." rows="3"></textarea>
+        <button onclick="addPost()" id="postBtn">Publish Post</button>
+    </div>
 
-<input id="title" placeholder="Post Title">
-<textarea id="content" placeholder="Write something..."></textarea>
-<button onclick="addPost()">Post</button>
-
-<div id="posts"></div>
+    <div id="posts"></div>
 </section>
 
-<!-- FIREBASE -->
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import {
-getFirestore,
-collection,
-addDoc,
-onSnapshot,
-query,
-orderBy
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, updateDoc, doc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+    const firebaseConfig = {
+        apiKey: "AIzaSyBNj63exOWvuoD1gNwpYTCZNdJarQJxu5U",
+        authDomain: "campusconnect-d5fc1.firebaseapp.com",
+        projectId: "campusconnect-d5fc1",
+        storageBucket: "campusconnect-d5fc1.firebasestorage.app",
+        messagingSenderId: "571562855908",
+        appId: "1:571562855908:web:44e5d10e4b062412c38bf1"
+    };
 
-// ✅ YOUR FIREBASE CONFIG (ADDED EXACTLY)
-const firebaseConfig = {
-  apiKey: "AIzaSyBNj63exOWvuoD1gNwpYTCZNdJarQJxu5U",
-  authDomain: "campusconnect-d5fc1.firebaseapp.com",
-  projectId: "campusconnect-d5fc1",
-  storageBucket: "campusconnect-d5fc1.firebasestorage.app",
-  messagingSenderId: "571562855908",
-  appId: "1:571562855908:web:44e5d10e4b062412c38bf1",
-  measurementId: "G-R15Q0X75XR"
-};
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+    let currentUser = null;
+    let allPosts = [];
 
-// ADD POST
-window.addPost = async function () {
-let title = document.getElementById("title").value;
-let content = document.getElementById("content").value;
+    // --- AUTH LOGIC ---
+    window.login = () => signInWithPopup(auth, provider);
+    window.logout = () => signOut(auth);
 
-if(!title || !content) return;
+    onAuthStateChanged(auth, (user) => {
+        const authArea = document.getElementById("authArea");
+        const editor = document.getElementById("editor");
+        if (user) {
+            currentUser = user;
+            authArea.innerHTML = `
+                <div class="user-profile">
+                    <img src="${user.photoURL}">
+                    <i class="fas fa-sign-out-alt" onclick="logout()" style="cursor:pointer"></i>
+                </div>`;
+            editor.style.display = "block";
+        } else {
+            currentUser = null;
+            authArea.innerHTML = `<button class="btn-login" onclick="login()">Login with Google</button>`;
+            editor.style.display = "none";
+        }
+    });
 
-await addDoc(collection(db,"posts"),{
-title,
-content,
-time:Date.now()
-});
+    // --- UTILITY: TIME AGO ---
+    function timeAgo(date) {
+        const seconds = Math.floor((new Date() - date) / 1000);
+        if (seconds < 60) return "Just now";
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) return minutes + "m ago";
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) return hours + "h ago";
+        return Math.floor(hours / 24) + "d ago";
+    }
 
-document.getElementById("title").value="";
-document.getElementById("content").value="";
-};
+    // --- ADD POST ---
+    window.addPost = async function () {
+        const title = document.getElementById("title").value;
+        const category = document.getElementById("category").value;
+        const content = document.getElementById("content").value;
+        const btn = document.getElementById("postBtn");
 
-// LOAD POSTS REALTIME
-const q = query(collection(db,"posts"),orderBy("time","desc"));
+        if(!title || !content) return;
 
-onSnapshot(q,(snap)=>{
-let box = document.getElementById("posts");
-box.innerHTML="";
+        btn.disabled = true;
+        await addDoc(collection(db, "posts"), {
+            title, category, content,
+            time: Date.now(),
+            likes: 0,
+            userName: currentUser.displayName,
+            userImg: currentUser.photoURL
+        });
+        
+        document.getElementById("title").value = "";
+        document.getElementById("content").value = "";
+        btn.disabled = false;
+    };
 
-snap.forEach(doc=>{
-let d = doc.data();
+    // --- LIKE LOGIC ---
+    window.likePost = async (id) => {
+        const postRef = doc(db, "posts", id);
+        await updateDoc(postRef, { likes: increment(1) });
+    };
 
-box.innerHTML += `
-<div class="post">
-<h3>${d.title}</h3>
-<p>${d.content}</p>
-</div>
-`;
-});
-});
+    // --- RENDER & FILTER ---
+    const q = query(collection(db, "posts"), orderBy("time", "desc"));
+    onSnapshot(q, (snap) => {
+        allPosts = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        render(allPosts);
+    });
+
+    function render(data) {
+        const box = document.getElementById("posts");
+        box.innerHTML = data.length ? "" : "<p style='text-align:center; color:gray;'>No posts found...</p>";
+
+        data.forEach(d => {
+            const card = document.createElement('div');
+            card.className = 'post';
+            card.innerHTML = `
+                <div class="post-header">
+                    <img src="${d.userImg || 'https://via.placeholder.com/30'}">
+                    <div>
+                        <div class="name">${d.userName || 'Anonymous'}</div>
+                        <div class="time">${timeAgo(d.time)}</div>
+                    </div>
+                </div>
+                <span class="post-tag">${d.category}</span>
+                <h3 style="margin: 10px 0 5px 0;">${d.title}</h3>
+                <p style="font-size:0.9rem; color:var(--text-dim);">${d.content}</p>
+                <div class="post-footer">
+                    <div class="like-btn" onclick="likePost('${d.id}')">
+                        <i class="fas fa-heart"></i> <span>${d.likes || 0}</span>
+                    </div>
+                    <i class="fas fa-share-alt" style="color:gray; font-size:0.8rem;"></i>
+                </div>
+            `;
+            box.appendChild(card);
+        });
+    }
+
+    window.filterPosts = () => {
+        const term = document.getElementById("searchBar").value.toLowerCase();
+        const filtered = allPosts.filter(p => 
+            p.title.toLowerCase().includes(term) || 
+            p.content.toLowerCase().includes(term) ||
+            p.category.toLowerCase().includes(term)
+        );
+        render(filtered);
+    };
 </script>
 
 </body>
