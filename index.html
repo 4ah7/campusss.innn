@@ -3,53 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Campus Inn | Secure Edition</title>
+    <title>Campus Inn | Fortress Edition</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #030712; --glass: rgba(31, 41, 55, 0.6); --accent: #818cf8; --text-main: #f3f4f6; --text-dim: #9ca3af; }
-        body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: radial-gradient(circle at top right, #1e1b4b, var(--bg)); color: var(--text-main); min-height: 100vh; }
-        
-        nav { display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 8%; background: rgba(3, 7, 18, 0.8); backdrop-filter: blur(20px); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .logo { font-weight: 800; font-size: 1.4rem; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; cursor: pointer; }
-        .nav-link { cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: 0.3s; color: var(--text-dim); margin-right: 20px; }
-        .nav-link.active { color: var(--accent); }
-
-        #feed-view, #profile-view { padding: 40px 8%; max-width: 800px; margin: 0 auto; }
-        #profile-view { display: none; }
-
-        .post { background: var(--glass); border-radius: 24px; padding: 24px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 25px; }
-        .post-img { width: 100%; border-radius: 16px; margin-top: 15px; object-fit: cover; max-height: 400px; border: 1px solid rgba(255,255,255,0.1); display: block; }
-
-        .input-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 12px; border-radius: 12px; width: 100%; margin-bottom: 10px; box-sizing: border-box; font-family: inherit; }
-        .input-box:focus { border-color: var(--accent); outline: none; }
-        
-        .btn-primary { background: linear-gradient(135deg, #6366f1, #a855f7); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; }
-        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
-
-        .reply-item { background: rgba(255,255,255,0.04); padding: 10px; border-radius: 10px; margin-top: 8px; font-size: 0.85rem; border-left: 3px solid var(--accent); }
-        .user-tag { font-size: 0.85rem; font-weight: 600; color: var(--accent); }
+        body.light-mode { --bg: #f9fafb; --glass: rgba(255, 255, 255, 0.8); --accent: #4f46e5; --text-main: #111827; --text-dim: #4b5563; }
+        body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text-main); min-height: 100vh; transition: 0.3s; }
+        nav { display: flex; justify-content: space-between; align-items: center; padding: 1rem 8%; background: var(--bg); backdrop-filter: blur(20px); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid rgba(128,128,128,0.1); }
+        .logo { font-weight: 800; font-size: 1.4rem; color: var(--accent); cursor: pointer; }
+        .nav-link { cursor: pointer; font-weight: 600; font-size: 0.85rem; color: var(--text-dim); margin-right: 15px; }
+        #feed-view, #profile-view, #visit-view { padding: 30px 8%; max-width: 700px; margin: 0 auto; display: none; }
+        #feed-view { display: block; }
+        .post { background: var(--glass); border-radius: 20px; padding: 20px; border: 1px solid rgba(128,128,128,0.1); margin-bottom: 20px; }
+        .post-img { width: 100%; border-radius: 12px; margin: 12px 0; object-fit: cover; max-height: 350px; }
+        .input-box { background: rgba(128,128,128,0.05); border: 1px solid rgba(128,128,128,0.1); color: var(--text-main); padding: 12px; border-radius: 12px; width: 100%; margin-bottom: 8px; box-sizing: border-box; }
+        .btn-primary { background: var(--accent); color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; width: 100%; }
+        .reply-item { background: rgba(128,128,128,0.05); padding: 8px; border-radius: 8px; margin-top: 5px; font-size: 0.8rem; }
     </style>
 </head>
 <body>
 
 <nav>
     <div class="logo" onclick="showView('feed')">Campus Inn</div>
-    <div>
-        <span class="nav-link active" id="nav-home" onclick="showView('feed')">Home</span>
-        <span class="nav-link" id="profile-btn" style="display:none;" onclick="showView('profile')">My Profile</span>
+    <div style="display:flex; align-items:center;">
+        <span class="nav-link" onclick="showView('feed')">Home</span>
+        <span class="nav-link" id="profile-btn" style="display:none;" onclick="showView('profile')">Profile</span>
         <span id="authArea"></span>
     </div>
 </nav>
 
 <div id="feed-view">
-    <div id="editor" style="display:none; margin-bottom: 40px;">
-        <div class="post" style="background: rgba(255,255,255,0.02);">
-            <h3 style="margin-top:0">The Campus Pulse</h3>
-            <input id="postTitle" class="input-box" placeholder="Catchy Headline">
-            <textarea id="postContent" class="input-box" style="height: 80px;" placeholder="What's the scoop?"></textarea>
-            <input id="postImgUrl" class="input-box" placeholder="Image URL (Link to a photo)">
-            <button onclick="addPost()" class="btn-primary" style="width:100%">Post to Feed</button>
+    <div id="editor" style="display:none; margin-bottom: 30px;">
+        <div class="post">
+            <input id="postTitle" class="input-box" placeholder="Title">
+            <textarea id="postContent" class="input-box" placeholder="What's happening?"></textarea>
+            <input type="file" id="postFile" class="input-box" accept="image/*">
+            <button onclick="addPost()" id="uploadBtn" class="btn-primary">Post</button>
         </div>
     </div>
     <div id="posts"></div>
@@ -57,23 +47,30 @@
 
 <div id="profile-view">
     <div class="post" style="text-align:center;">
-        <img id="p-img" style="width:100px; height:100px; border-radius:50%; border:3px solid var(--accent); margin-bottom:15px; object-fit:cover;">
-        <h2 id="p-name" style="margin:0"></h2>
-        <div style="text-align:left; margin-top:30px;">
-            <label style="font-size:0.8rem; color:var(--accent);">Bio</label>
-            <input id="u-bio" class="input-box">
-            <label style="font-size:0.8rem; color:var(--accent);">Major</label>
-            <input id="u-dept" class="input-box">
-            <button onclick="saveProfile()" class="btn-primary" style="width:100%; margin-top:10px;">Update Profile</button>
-            <button onclick="logout()" style="background:none; border:none; color:#ef4444; cursor:pointer; width:100%; margin-top:20px; font-weight:600;">Sign Out</button>
-        </div>
+        <img id="p-img" style="width:80px; height:80px; border-radius:50%; object-fit:cover;">
+        <h2 id="p-name"></h2>
+        <input id="u-bio" class="input-box" placeholder="Bio">
+        <input id="u-dept" class="input-box" placeholder="Major">
+        <button onclick="saveProfile()" class="btn-primary">Save</button>
+        <button onclick="logout()" style="color:red; background:none; border:none; margin-top:10px; cursor:pointer;">Logout</button>
     </div>
+</div>
+
+<div id="visit-view">
+    <div class="post" style="text-align:center;">
+        <img id="v-img" style="width:80px; height:80px; border-radius:50%; object-fit:cover;">
+        <h2 id="v-name"></h2>
+        <p id="v-bio"></p>
+        <p id="v-dept" style="font-weight:bold; color:var(--accent)"></p>
+    </div>
+    <div id="v-posts"></div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, setDoc, doc, getDoc, updateDoc, increment, arrayUnion, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, setDoc, doc, getDoc, updateDoc, increment, arrayUnion, deleteDoc, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyBNj63exOWvuoD1gNwpYTCZNdJarQJxu5U",
@@ -87,39 +84,146 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
+    const storage = getStorage(app);
     const provider = new GoogleAuthProvider();
 
     let currentUser = null;
 
-    // --- UTILS (SECURITY FIXES) ---
-    const isValidImg = (url) => {
-        try { return url.startsWith('http') || url.startsWith('https'); } catch { return false; }
-    };
+    // --- SECURE RENDERER (NO INNERHTML) ---
+    function render(snap, targetId) {
+        const box = document.getElementById(targetId);
+        box.textContent = ""; // Securely clear
 
+        snap.forEach(pDoc => {
+            const d = pDoc.data();
+            const id = pDoc.id;
+            
+            const post = document.createElement('div');
+            post.className = 'post';
+
+            // Header (User Info)
+            const header = document.createElement('div');
+            header.style.display = 'flex';
+            header.style.alignItems = 'center';
+            header.style.gap = '10px';
+            header.style.marginBottom = '10px';
+
+            const userImg = document.createElement('img');
+            userImg.src = d.userImg;
+            userImg.style.width = '30px';
+            userImg.style.height = '30px';
+            userImg.style.borderRadius = '50%';
+            userImg.style.cursor = 'pointer';
+            userImg.onclick = () => visitProfile(d.uid);
+
+            const userName = document.createElement('span');
+            userName.style.fontWeight = '700';
+            userName.style.cursor = 'pointer';
+            userName.textContent = d.userName; // SECURE
+            userName.onclick = () => visitProfile(d.uid);
+
+            header.append(userImg, userName);
+
+            // Title
+            const title = document.createElement('h3');
+            title.style.margin = '0 0 5px 0';
+            title.textContent = d.title; // SECURE
+
+            // Content
+            const content = document.createElement('p');
+            content.style.fontSize = '0.9rem';
+            content.style.color = 'var(--text-dim)';
+            content.textContent = d.content; // SECURE
+
+            post.append(header, title, content);
+
+            // Image
+            if(d.imageUrl) {
+                const img = document.createElement('img');
+                img.src = d.imageUrl;
+                img.className = 'post-img';
+                post.append(img);
+            }
+
+            // Footer (Likes & Actions)
+            const footer = document.createElement('div');
+            footer.style.cssText = 'margin-top:15px; border-top:1px solid rgba(128,128,128,0.1); padding-top:10px; display:flex; justify-content:space-between;';
+            
+            const likeBtn = document.createElement('span');
+            likeBtn.style.cursor = 'pointer';
+            likeBtn.textContent = `❤️ ${d.likes}`;
+            likeBtn.onclick = () => like(id);
+
+            const time = document.createElement('span');
+            time.style.cssText = 'font-size:0.7rem; opacity:0.5;';
+            time.textContent = new Date(d.time).toLocaleDateString();
+
+            footer.append(likeBtn, time);
+            post.append(footer);
+
+            // Replies
+            const replyList = document.createElement('div');
+            replyList.style.marginTop = '10px';
+            (d.replies || []).forEach(r => {
+                const item = document.createElement('div');
+                item.className = 'reply-item';
+                
+                const rUser = document.createElement('b');
+                rUser.textContent = `${r.user}: `; // SECURE
+                
+                const rText = document.createElement('span');
+                rText.textContent = r.text; // SECURE
+                
+                item.append(rUser, rText);
+                replyList.append(item);
+            });
+            post.append(replyList);
+
+            // Reply Input
+            if(currentUser) {
+                const rInput = document.createElement('input');
+                rInput.className = 'input-box';
+                rInput.style.cssText = 'font-size:0.7rem; margin-top:10px;';
+                rInput.placeholder = 'Reply...';
+                rInput.id = `re-${id}`;
+
+                const rBtn = document.createElement('button');
+                rBtn.className = 'btn-primary';
+                rBtn.style.cssText = 'padding:5px; font-size:0.7rem;';
+                rBtn.textContent = 'Reply';
+                rBtn.onclick = () => sendReply(id);
+
+                post.append(rInput, rBtn);
+            }
+
+            box.append(post);
+        });
+    }
+
+    // --- OTHER LOGIC (KEEP AS IS) ---
     window.showView = (v) => {
-        document.getElementById('feed-view').style.display = v === 'feed' ? 'block' : 'none';
-        document.getElementById('profile-view').style.display = v === 'profile' ? 'block' : 'none';
-        document.getElementById('nav-home').classList.toggle('active', v === 'feed');
-        document.getElementById('profile-btn').classList.toggle('active', v === 'profile');
+        ['feed-view', 'profile-view', 'visit-view'].forEach(id => document.getElementById(id).style.display = 'none');
+        document.getElementById(`${v}-view`).style.display = 'block';
     };
 
-    // --- AUTH ---
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             currentUser = user;
-            document.getElementById('authArea').innerHTML = `<img src="${user.photoURL}" style="width:32px; border-radius:50%; border:2px solid var(--accent); cursor:pointer;" onclick="showView('profile')">`;
+            document.getElementById('authArea').innerHTML = `<img src="${user.photoURL}" style="width:30px; border-radius:50%; cursor:pointer;" onclick="showView('profile')">`;
             document.getElementById('profile-btn').style.display = 'inline';
             document.getElementById('editor').style.display = 'block';
             document.getElementById('p-img').src = user.photoURL;
-            document.getElementById('p-name').innerText = user.displayName;
+            document.getElementById('p-name').textContent = user.displayName;
             const uDoc = await getDoc(doc(db, "users", user.uid));
             if(uDoc.exists()) {
-                document.getElementById('u-bio').value = uDoc.data().bio || "";
-                document.getElementById('u-dept').value = uDoc.data().dept || "";
+                document.getElementById('u-bio').value = uDoc.data().bio;
+                document.getElementById('u-dept').value = uDoc.data().dept;
+            } else {
+                await setDoc(doc(db, "users", user.uid), { name: user.displayName, img: user.photoURL, bio: "", dept: "" });
             }
         } else {
             currentUser = null;
-            document.getElementById('authArea').innerHTML = `<button onclick="login()" class="btn-primary" style="padding:8px 15px;">Login</button>`;
+            document.getElementById('authArea').innerHTML = `<button onclick="login()" class="btn-primary" style="width:auto; padding:5px 15px;">Login</button>`;
             document.getElementById('profile-btn').style.display = 'none';
             document.getElementById('editor').style.display = 'none';
         }
@@ -128,126 +232,47 @@
     window.login = () => signInWithPopup(auth, provider);
     window.logout = () => signOut(auth).then(() => location.reload());
 
-    window.saveProfile = async () => {
-        if(!currentUser) return;
-        await setDoc(doc(db, "users", currentUser.uid), {
-            bio: document.getElementById('u-bio').value,
-            dept: document.getElementById('u-dept').value
-        }, { merge: true });
-        alert("Saved!");
+    window.visitProfile = async (uid) => {
+        const uDoc = await getDoc(doc(db, "users", uid));
+        if(!uDoc.exists()) return;
+        const data = uDoc.data();
+        document.getElementById('v-img').src = data.img;
+        document.getElementById('v-name').textContent = data.name;
+        document.getElementById('v-bio').textContent = data.bio || "No bio.";
+        document.getElementById('v-dept').textContent = data.dept || "Student";
+        showView('visit');
+        const q = query(collection(db, "posts"), where("uid", "==", uid), orderBy("time", "desc"));
+        onSnapshot(q, (snap) => render(snap, 'v-posts'));
     };
 
     window.addPost = async () => {
         const t = document.getElementById('postTitle').value;
         const c = document.getElementById('postContent').value;
-        const img = document.getElementById('postImgUrl').value;
+        const file = document.getElementById('postFile').files[0];
         if(!t || !c || !currentUser) return;
-
-        await addDoc(collection(db, "posts"), {
-            title: t, content: c, imageUrl: img, uid: currentUser.uid, 
-            userName: currentUser.displayName, userImg: currentUser.photoURL,
-            time: Date.now(), likes: 0, replies: []
-        });
-        document.getElementById('postTitle').value = "";
-        document.getElementById('postContent').value = "";
-        document.getElementById('postImgUrl').value = "";
+        
+        const btn = document.getElementById('uploadBtn');
+        btn.textContent = "Uploading...";
+        let url = "";
+        if(file) {
+            const sRef = ref(storage, `posts/${Date.now()}_${file.name}`);
+            await uploadBytes(sRef, file);
+            url = await getDownloadURL(sRef);
+        }
+        await addDoc(collection(db, "posts"), { title: t, content: c, imageUrl: url, uid: currentUser.uid, userName: currentUser.displayName, userImg: currentUser.photoURL, time: Date.now(), likes: 0, replies: [] });
+        document.getElementById('postTitle').value = ""; document.getElementById('postContent').value = ""; document.getElementById('postFile').value = "";
+        btn.textContent = "Post";
     };
 
+    window.like = (id) => updateDoc(doc(db, "posts", id), { likes: increment(1) });
     window.sendReply = async (id) => {
         const input = document.getElementById(`re-${id}`);
-        if(!input.value || !currentUser) return;
-        await updateDoc(doc(db, "posts", id), {
-            replies: arrayUnion({ user: currentUser.displayName, text: input.value })
-        });
+        if(!input.value) return;
+        await updateDoc(doc(db, "posts", id), { replies: arrayUnion({ user: currentUser.displayName, text: input.value }) });
         input.value = "";
     };
 
-    window.deletePost = (id) => { if(confirm("Delete this post?")) deleteDoc(doc(db, "posts", id)); };
-    window.like = (id) => { if(currentUser) updateDoc(doc(db, "posts", id), { likes: increment(1) }); };
-
-    // --- SECURE RENDER ---
-    onSnapshot(query(collection(db, "posts"), orderBy("time", "desc")), (snap) => {
-        const box = document.getElementById('posts');
-        box.innerHTML = "";
-        
-        snap.forEach(postDoc => {
-            const d = postDoc.data();
-            const id = postDoc.id;
-            const isOwner = currentUser && d.uid === currentUser.uid;
-
-            const postEl = document.createElement('div');
-            postEl.className = 'post';
-            
-            // 1. Create Structure Safely
-            postEl.innerHTML = `
-                <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
-                    <img src="${d.userImg}" style="width:30px; height:30px; border-radius:50%; object-fit:cover;">
-                    <span class="user-tag" id="user-${id}"></span>
-                </div>
-                <h3 id="title-${id}" style="margin: 0 0 8px 0;"></h3>
-                <p id="content-${id}" style="font-size:0.9rem; color:var(--text-dim); margin-bottom:10px; line-height:1.5;"></p>
-                <div id="img-box-${id}"></div>
-                
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; padding-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.05);">
-                    <span onclick="like('${id}')" style="cursor:pointer; font-size:0.9rem;">❤️ ${d.likes}</span>
-                    <span id="del-box-${id}"></span>
-                </div>
-
-                <div style="margin-top:15px;">
-                    <div id="reply-list-${id}"></div>
-                    ${currentUser ? `
-                        <div style="display:flex; gap:8px; margin-top:10px;">
-                            <input id="re-${id}" class="input-box" style="margin:0; font-size:0.8rem;" placeholder="Write a reply...">
-                            <button onclick="sendReply('${id}')" class="btn-primary" style="width:auto; padding:0 12px;"><i class="fas fa-paper-plane"></i></button>
-                        </div>
-                    ` : ''}
-                </div>
-            `;
-
-            box.appendChild(postEl);
-
-            // 2. Set Content Safely (Injection Protection)
-            document.getElementById(`user-${id}`).textContent = d.userName;
-            document.getElementById(`title-${id}`).textContent = d.title;
-            document.getElementById(`content-${id}`).textContent = d.content;
-
-            // 3. Secure Image Loading
-            if (d.imageUrl && isValidImg(d.imageUrl)) {
-                const img = document.createElement('img');
-                img.src = d.imageUrl;
-                img.className = 'post-img';
-                img.onerror = () => img.style.display = 'none';
-                document.getElementById(`img-box-${id}`).appendChild(img);
-            }
-
-            // 4. Secure Delete Button
-            if (isOwner) {
-                const delBtn = document.createElement('i');
-                delBtn.className = 'fas fa-trash-alt';
-                delBtn.style.cssText = 'cursor:pointer; opacity:0.4; font-size:0.8rem;';
-                delBtn.onclick = () => deletePost(id);
-                document.getElementById(`del-box-${id}`).appendChild(delBtn);
-            }
-
-            // 5. Secure Replies Rendering
-            const rList = document.getElementById(`reply-list-${id}`);
-            (d.replies || []).forEach(r => {
-                const rDiv = document.createElement('div');
-                rDiv.className = 'reply-item';
-                
-                const rUser = document.createElement('b');
-                rUser.style.color = 'var(--accent)';
-                rUser.textContent = r.user + ": ";
-                
-                const rText = document.createElement('span');
-                rText.textContent = r.text;
-                
-                rDiv.appendChild(rUser);
-                rDiv.appendChild(rText);
-                rList.appendChild(rDiv);
-            });
-        });
-    });
+    onSnapshot(query(collection(db, "posts"), orderBy("time", "desc")), (snap) => render(snap, 'posts'));
 </script>
 </body>
 </html>
