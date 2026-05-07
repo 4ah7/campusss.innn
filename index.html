@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Campus Inn | Verified</title>
+    <title>Campus Inn | Secure Edition</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
@@ -11,67 +11,60 @@
         body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: radial-gradient(circle at top right, #1e1b4b, var(--bg)); color: var(--text-main); min-height: 100vh; }
         
         nav { display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 8%; background: rgba(3, 7, 18, 0.8); backdrop-filter: blur(20px); position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .logo { font-weight: 800; font-size: 1.4rem; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; }
+        .logo { font-weight: 800; font-size: 1.4rem; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; cursor: pointer; }
         .nav-link { cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: 0.3s; color: var(--text-dim); margin-right: 20px; }
-        .nav-link:hover, .nav-link.active { color: var(--accent); }
+        .nav-link.active { color: var(--accent); }
 
-        #feed-view, #profile-view { padding: 40px 8%; max-width: 900px; margin: 0 auto; }
+        #feed-view, #profile-view { padding: 40px 8%; max-width: 800px; margin: 0 auto; }
         #profile-view { display: none; }
 
-        .post { background: var(--glass); border-radius: 20px; padding: 24px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 25px; transition: 0.3s; }
-        .post:hover { border-color: rgba(129, 140, 248, 0.3); }
+        .post { background: var(--glass); border-radius: 24px; padding: 24px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 25px; }
+        .post-img { width: 100%; border-radius: 16px; margin-top: 15px; object-fit: cover; max-height: 400px; border: 1px solid rgba(255,255,255,0.1); display: block; }
 
-        .input-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 12px; border-radius: 12px; width: 100%; margin-bottom: 10px; box-sizing: border-box; transition: 0.3s; }
-        .input-box:focus { border-color: var(--accent); outline: none; background: rgba(255,255,255,0.06); }
+        .input-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 12px; border-radius: 12px; width: 100%; margin-bottom: 10px; box-sizing: border-box; font-family: inherit; }
+        .input-box:focus { border-color: var(--accent); outline: none; }
         
         .btn-primary { background: linear-gradient(135deg, #6366f1, #a855f7); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; }
         .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
 
         .reply-item { background: rgba(255,255,255,0.04); padding: 10px; border-radius: 10px; margin-top: 8px; font-size: 0.85rem; border-left: 3px solid var(--accent); }
-        .login-prompt { text-align: center; padding: 20px; background: rgba(129, 140, 248, 0.1); border-radius: 15px; border: 1px dashed var(--accent); margin-bottom: 30px; }
+        .user-tag { font-size: 0.85rem; font-weight: 600; color: var(--accent); }
     </style>
 </head>
 <body>
 
 <nav>
-    <div class="logo">Campus Inn</div>
+    <div class="logo" onclick="showView('feed')">Campus Inn</div>
     <div>
-        <span class="nav-link active" onclick="showView('feed')">Home</span>
+        <span class="nav-link active" id="nav-home" onclick="showView('feed')">Home</span>
         <span class="nav-link" id="profile-btn" style="display:none;" onclick="showView('profile')">My Profile</span>
         <span id="authArea"></span>
     </div>
 </nav>
 
 <div id="feed-view">
-    <!-- POST EDITOR: Only shown to logged in users -->
     <div id="editor" style="display:none; margin-bottom: 40px;">
         <div class="post" style="background: rgba(255,255,255,0.02);">
-            <h3 style="margin-top:0">Share an Update</h3>
-            <input id="postTitle" class="input-box" placeholder="What's the headline?">
-            <textarea id="postContent" class="input-box" style="height: 100px;" placeholder="Tell the campus more..."></textarea>
-            <button onclick="addPost()" class="btn-primary" style="width:100%">Post Anonymously</button>
+            <h3 style="margin-top:0">The Campus Pulse</h3>
+            <input id="postTitle" class="input-box" placeholder="Catchy Headline">
+            <textarea id="postContent" class="input-box" style="height: 80px;" placeholder="What's the scoop?"></textarea>
+            <input id="postImgUrl" class="input-box" placeholder="Image URL (Link to a photo)">
+            <button onclick="addPost()" class="btn-primary" style="width:100%">Post to Feed</button>
         </div>
     </div>
-
-    <!-- GUEST PROMPT: Shown only to logged out users -->
-    <div id="guest-msg" class="login-prompt">
-        <p style="margin:0 0 10px 0; color:var(--text-dim);">Want to join the conversation?</p>
-        <button onclick="login()" class="btn-primary">Login to Post or Reply</button>
-    </div>
-
     <div id="posts"></div>
 </div>
 
 <div id="profile-view">
     <div class="post" style="text-align:center;">
-        <img id="p-img" style="width:100px; border-radius:50%; border:3px solid var(--accent); margin-bottom:15px;">
+        <img id="p-img" style="width:100px; height:100px; border-radius:50%; border:3px solid var(--accent); margin-bottom:15px; object-fit:cover;">
         <h2 id="p-name" style="margin:0"></h2>
         <div style="text-align:left; margin-top:30px;">
             <label style="font-size:0.8rem; color:var(--accent);">Bio</label>
-            <input id="u-bio" class="input-box" placeholder="Short bio...">
-            <label style="font-size:0.8rem; color:var(--accent);">Department</label>
-            <input id="u-dept" class="input-box" placeholder="e.g. Computer Science">
-            <button onclick="saveProfile()" class="btn-primary" style="width:100%; margin-top:10px;">Save Profile</button>
+            <input id="u-bio" class="input-box">
+            <label style="font-size:0.8rem; color:var(--accent);">Major</label>
+            <input id="u-dept" class="input-box">
+            <button onclick="saveProfile()" class="btn-primary" style="width:100%; margin-top:10px;">Update Profile</button>
             <button onclick="logout()" style="background:none; border:none; color:#ef4444; cursor:pointer; width:100%; margin-top:20px; font-weight:600;">Sign Out</button>
         </div>
     </div>
@@ -98,27 +91,27 @@
 
     let currentUser = null;
 
+    // --- UTILS (SECURITY FIXES) ---
+    const isValidImg = (url) => {
+        try { return url.startsWith('http') || url.startsWith('https'); } catch { return false; }
+    };
+
     window.showView = (v) => {
         document.getElementById('feed-view').style.display = v === 'feed' ? 'block' : 'none';
         document.getElementById('profile-view').style.display = v === 'profile' ? 'block' : 'none';
+        document.getElementById('nav-home').classList.toggle('active', v === 'feed');
+        document.getElementById('profile-btn').classList.toggle('active', v === 'profile');
     };
 
+    // --- AUTH ---
     onAuthStateChanged(auth, async (user) => {
-        const authArea = document.getElementById('authArea');
-        const profileBtn = document.getElementById('profile-btn');
-        const editor = document.getElementById('editor');
-        const guestMsg = document.getElementById('guest-msg');
-
         if (user) {
             currentUser = user;
-            authArea.innerHTML = `<img src="${user.photoURL}" style="width:32px; border-radius:50%; border:2px solid var(--accent); vertical-align:middle; cursor:pointer;" onclick="showView('profile')">`;
-            profileBtn.style.display = 'inline';
-            editor.style.display = 'block';
-            guestMsg.style.display = 'none';
-            
+            document.getElementById('authArea').innerHTML = `<img src="${user.photoURL}" style="width:32px; border-radius:50%; border:2px solid var(--accent); cursor:pointer;" onclick="showView('profile')">`;
+            document.getElementById('profile-btn').style.display = 'inline';
+            document.getElementById('editor').style.display = 'block';
             document.getElementById('p-img').src = user.photoURL;
             document.getElementById('p-name').innerText = user.displayName;
-            
             const uDoc = await getDoc(doc(db, "users", user.uid));
             if(uDoc.exists()) {
                 document.getElementById('u-bio').value = uDoc.data().bio || "";
@@ -126,10 +119,9 @@
             }
         } else {
             currentUser = null;
-            authArea.innerHTML = `<button onclick="login()" style="background:var(--accent); border:none; color:white; padding:8px 18px; border-radius:10px; cursor:pointer; font-weight:600;">Login</button>`;
-            profileBtn.style.display = 'none';
-            editor.style.display = 'none';
-            guestMsg.style.display = 'block';
+            document.getElementById('authArea').innerHTML = `<button onclick="login()" class="btn-primary" style="padding:8px 15px;">Login</button>`;
+            document.getElementById('profile-btn').style.display = 'none';
+            document.getElementById('editor').style.display = 'none';
         }
     });
 
@@ -142,82 +134,118 @@
             bio: document.getElementById('u-bio').value,
             dept: document.getElementById('u-dept').value
         }, { merge: true });
-        alert("Profile Updated!");
+        alert("Saved!");
     };
 
     window.addPost = async () => {
         const t = document.getElementById('postTitle').value;
         const c = document.getElementById('postContent').value;
+        const img = document.getElementById('postImgUrl').value;
         if(!t || !c || !currentUser) return;
+
         await addDoc(collection(db, "posts"), {
-            title: t, content: c, uid: currentUser.uid, 
+            title: t, content: c, imageUrl: img, uid: currentUser.uid, 
             userName: currentUser.displayName, userImg: currentUser.photoURL,
             time: Date.now(), likes: 0, replies: []
         });
         document.getElementById('postTitle').value = "";
         document.getElementById('postContent').value = "";
+        document.getElementById('postImgUrl').value = "";
     };
 
     window.sendReply = async (id) => {
-        if(!currentUser) { alert("Please login to reply!"); return; }
-        const val = document.getElementById(`re-${id}`).value;
-        if(!val) return;
+        const input = document.getElementById(`re-${id}`);
+        if(!input.value || !currentUser) return;
         await updateDoc(doc(db, "posts", id), {
-            replies: arrayUnion({ user: currentUser.displayName, text: val })
+            replies: arrayUnion({ user: currentUser.displayName, text: input.value })
         });
-        document.getElementById(`re-${id}`).value = "";
+        input.value = "";
     };
 
-    window.deletePost = (id) => { if(confirm("Permanently delete this post?")) deleteDoc(doc(db, "posts", id)); };
-    window.like = (id) => {
-        if(!currentUser) { alert("Login to like posts!"); return; }
-        updateDoc(doc(db, "posts", id), { likes: increment(1) });
-    };
+    window.deletePost = (id) => { if(confirm("Delete this post?")) deleteDoc(doc(db, "posts", id)); };
+    window.like = (id) => { if(currentUser) updateDoc(doc(db, "posts", id), { likes: increment(1) }); };
 
-    // REAL-TIME FEED LISTENER
+    // --- SECURE RENDER ---
     onSnapshot(query(collection(db, "posts"), orderBy("time", "desc")), (snap) => {
         const box = document.getElementById('posts');
         box.innerHTML = "";
-        snap.forEach(doc => {
-            const d = doc.data();
+        
+        snap.forEach(postDoc => {
+            const d = postDoc.data();
+            const id = postDoc.id;
             const isOwner = currentUser && d.uid === currentUser.uid;
+
             const postEl = document.createElement('div');
             postEl.className = 'post';
             
-            // Only show reply input if user is logged in
-            const replyInputHtml = currentUser ? `
-                <div style="display:flex; gap:8px; margin-top:15px;">
-                    <input id="re-${doc.id}" class="input-box" style="margin:0; font-size:0.8rem;" placeholder="Write a reply...">
-                    <button onclick="sendReply('${doc.id}')" class="btn-primary" style="width:auto; padding:0 15px;"><i class="fas fa-paper-plane"></i></button>
-                </div>
-            ` : `<p style="font-size:0.75rem; color:var(--text-dim); margin-top:15px; text-align:center;">Login to reply to this post</p>`;
-
+            // 1. Create Structure Safely
             postEl.innerHTML = `
                 <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
                     <img src="${d.userImg}" style="width:30px; height:30px; border-radius:50%; object-fit:cover;">
-                    <span style="font-size:0.85rem; font-weight:600; color:var(--accent);">${d.userName}</span>
+                    <span class="user-tag" id="user-${id}"></span>
                 </div>
-                <h3 style="margin: 0 0 8px 0; line-height:1.4;">${d.title}</h3>
-                <p style="font-size:0.9rem; color:var(--text-dim); line-height:1.6; margin-bottom:20px;">${d.content}</p>
+                <h3 id="title-${id}" style="margin: 0 0 8px 0;"></h3>
+                <p id="content-${id}" style="font-size:0.9rem; color:var(--text-dim); margin-bottom:10px; line-height:1.5;"></p>
+                <div id="img-box-${id}"></div>
                 
-                <div style="display:flex; justify-content:space-between; align-items:center; padding-bottom:15px; border-bottom:1px solid rgba(255,255,255,0.05);">
-                    <span onclick="like('${doc.id}')" style="cursor:pointer; font-size:0.9rem;">
-                        <i class="fas fa-heart" style="color:#ef4444; margin-right:5px;"></i> ${d.likes}
-                    </span>
-                    ${isOwner ? `<i class="fas fa-trash-alt" onclick="deletePost('${doc.id}')" style="cursor:pointer; opacity:0.4; font-size:0.8rem;"></i>` : ''}
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; padding-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.05);">
+                    <span onclick="like('${id}')" style="cursor:pointer; font-size:0.9rem;">❤️ ${d.likes}</span>
+                    <span id="del-box-${id}"></span>
                 </div>
 
                 <div style="margin-top:15px;">
-                    <div id="reply-list">${(d.replies || []).map(r => `
-                        <div class="reply-item">
-                            <b style="color:var(--accent); display:block; font-size:0.75rem; margin-bottom:2px;">${r.user}</b>
-                            ${r.text}
+                    <div id="reply-list-${id}"></div>
+                    ${currentUser ? `
+                        <div style="display:flex; gap:8px; margin-top:10px;">
+                            <input id="re-${id}" class="input-box" style="margin:0; font-size:0.8rem;" placeholder="Write a reply...">
+                            <button onclick="sendReply('${id}')" class="btn-primary" style="width:auto; padding:0 12px;"><i class="fas fa-paper-plane"></i></button>
                         </div>
-                    `).join('')}</div>
-                    ${replyInputHtml}
+                    ` : ''}
                 </div>
             `;
+
             box.appendChild(postEl);
+
+            // 2. Set Content Safely (Injection Protection)
+            document.getElementById(`user-${id}`).textContent = d.userName;
+            document.getElementById(`title-${id}`).textContent = d.title;
+            document.getElementById(`content-${id}`).textContent = d.content;
+
+            // 3. Secure Image Loading
+            if (d.imageUrl && isValidImg(d.imageUrl)) {
+                const img = document.createElement('img');
+                img.src = d.imageUrl;
+                img.className = 'post-img';
+                img.onerror = () => img.style.display = 'none';
+                document.getElementById(`img-box-${id}`).appendChild(img);
+            }
+
+            // 4. Secure Delete Button
+            if (isOwner) {
+                const delBtn = document.createElement('i');
+                delBtn.className = 'fas fa-trash-alt';
+                delBtn.style.cssText = 'cursor:pointer; opacity:0.4; font-size:0.8rem;';
+                delBtn.onclick = () => deletePost(id);
+                document.getElementById(`del-box-${id}`).appendChild(delBtn);
+            }
+
+            // 5. Secure Replies Rendering
+            const rList = document.getElementById(`reply-list-${id}`);
+            (d.replies || []).forEach(r => {
+                const rDiv = document.createElement('div');
+                rDiv.className = 'reply-item';
+                
+                const rUser = document.createElement('b');
+                rUser.style.color = 'var(--accent)';
+                rUser.textContent = r.user + ": ";
+                
+                const rText = document.createElement('span');
+                rText.textContent = r.text;
+                
+                rDiv.appendChild(rUser);
+                rDiv.appendChild(rText);
+                rList.appendChild(rDiv);
+            });
         });
     });
 </script>
