@@ -48,36 +48,6 @@ const storage = getStorage(app);
 const provider = new GoogleAuthProvider();
 
 let currentUser = null;
-// IMAGE PREVIEW
-
-const fileInput = document.getElementById('postFile');
-
-if(fileInput){
-    fileInput.addEventListener('change', () => {
-
-        const file = fileInput.files[0];
-
-        const preview = document.getElementById('filePreview');
-        const info = document.getElementById('fileInfo');
-
-        if(!file){
-            preview.style.display = 'none';
-            info.textContent = '';
-            return;
-        }
-
-        info.textContent = `Selected: ${file.name}`;
-
-        const reader = new FileReader();
-
-        reader.onload = (e) => {
-            preview.src = e.target.result;
-            preview.style.display = 'block';
-        };
-
-        reader.readAsDataURL(file);
-    });
-}
 let currentVisitUid = null;
 let currentFilter = "All";
 let searchTerm = "";
@@ -271,8 +241,7 @@ window.addPost = async () => {
   const title = document.getElementById("postTitle").value.trim();
   const content = document.getElementById("postContent").value.trim();
   const type = document.getElementById("postType")?.value || "General";
-  const file = document.getElementById('postFile').files[0];
-const type = document.getElementById('postType').value;
+  const file = document.getElementById("postFile").files[0];
   const btn = document.getElementById("uploadBtn");
 
   if (!title || !content) {
@@ -383,7 +352,7 @@ function createReplyItem(reply) {
 function createPostCard(d, id) {
   const post = document.createElement("div");
   post.className = `post ${typeClass(d.type)}`;
-post.dataset.type = d.type || "General";
+
   const badge = document.createElement("span");
   badge.className = `badge ${badgeClass(d.type)}`;
   badge.textContent = (d.type || "General").toUpperCase();
@@ -589,47 +558,7 @@ onSnapshot(query(collection(db, "posts"), orderBy("time", "desc")), (snap) => {
     renderFeed();
   }
 });
-// FILTER SYSTEM
 
-let activeFilter = "All";
-
-document.querySelectorAll('.filter-chip').forEach(btn => {
-
-    btn.addEventListener('click', () => {
-
-        document.querySelectorAll('.filter-chip')
-            .forEach(b => b.classList.remove('active'));
-
-        btn.classList.add('active');
-
-        activeFilter = btn.textContent.trim();
-
-        applyFilters();
-    });
-
-});
-
-function applyFilters(){
-
-    const posts = document.querySelectorAll('#posts .post');
-
-    posts.forEach(post => {
-
-        const type = post.dataset.type || "General";
-
-        if(activeFilter === "All"){
-            post.style.display = "block";
-        }
-        else if(type === activeFilter){
-            post.style.display = "block";
-        }
-        else{
-            post.style.display = "none";
-        }
-
-    });
-
-}
 window.showView = (viewName) => {
   document.querySelectorAll(".view").forEach((v) => {
     v.style.display = "none";
