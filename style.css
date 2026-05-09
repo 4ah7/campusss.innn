@@ -17,7 +17,7 @@ body {
     overflow-x: hidden;
 }
 
-/* NAVIGATION */
+/* --- NAVIGATION --- */
 nav {
     display: flex;
     justify-content: space-between;
@@ -47,16 +47,21 @@ nav {
 .nav-link { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dim); cursor: pointer; transition: 0.3s; }
 .nav-link:hover { color: var(--accent); }
 
-/* VIEWS ENGINE */
-.view { display: none; padding: 40px 20px; max-width: 680px; margin: 0 auto; animation: fadeIn 0.4s ease; }
-#feed-view { display: block; }
+/* --- VIEWS ENGINE --- */
+.view { 
+    display: none; 
+    padding: 40px 20px; 
+    max-width: 680px; 
+    margin: 0 auto; 
+    animation: fadeIn 0.4s ease; 
+}
 
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* CARDS & POSTS */
+/* --- POST CARDS --- */
 .post {
     background: var(--card);
     border: 1px solid var(--border);
@@ -65,13 +70,24 @@ nav {
     margin-bottom: 24px;
     box-shadow: 0 20px 40px -15px rgba(0,0,0,0.5);
     transition: 0.3s ease;
+    position: relative;
 }
 
-.post:hover { border-color: rgba(99, 102, 241, 0.3); transform: translateY(-2px); }
+.post:hover { 
+    border-color: rgba(99, 102, 241, 0.3); 
+    transform: translateY(-2px); 
+}
 
-h2, h3 { font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; }
+h2, h3 { font-weight: 800; letter-spacing: -0.02em; margin-top: 0; }
 
-/* INPUTS */
+.post-img { 
+    width: 100%; 
+    border-radius: 16px; 
+    margin: 15px 0; 
+    display: block;
+}
+
+/* --- INPUTS & BUTTONS --- */
 .input-box {
     background: rgba(0, 0, 0, 0.2);
     border: 1px solid var(--border);
@@ -82,11 +98,15 @@ h2, h3 { font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; }
     box-sizing: border-box;
     margin-bottom: 12px;
     transition: 0.2s;
+    font-family: inherit;
 }
 
-.input-box:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-glow); }
+.input-box:focus { 
+    outline: none; 
+    border-color: var(--accent); 
+    box-shadow: 0 0 0 4px var(--accent-glow); 
+}
 
-/* BUTTONS */
 .btn-primary {
     background: var(--accent);
     color: white;
@@ -98,9 +118,76 @@ h2, h3 { font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; }
     transition: 0.2s;
 }
 
-.btn-primary:hover { opacity: 0.9; transform: scale(0.98); }
+.btn-primary:hover { 
+    opacity: 0.9; 
+    transform: scale(0.98); 
+}
 
-/* SKELETON LOADING */
+/* --- REPLY SYSTEM --- */
+.replies-container {
+    margin-top: 15px;
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    padding: 10px;
+}
+
+.reply-item {
+    font-size: 0.85rem;
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    color: #cbd5e1;
+}
+
+.reply-item:last-child { border-bottom: none; }
+.reply-item b { color: var(--accent); margin-right: 6px; }
+
+.reply-form {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.reply-input {
+    flex: 1;
+    background: rgba(0,0,0,0.2) !important;
+    margin-bottom: 0 !important;
+    font-size: 0.85rem !important;
+    padding: 10px 14px !important;
+}
+
+.reply-btn {
+    width: auto !important;
+    padding: 0 15px !important;
+    font-size: 0.8rem;
+}
+
+/* --- MISC --- */
+.profile-avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent); }
+.profile-avatar.large { width: 120px; height: 120px; margin-bottom: 20px; }
+
+.delete-btn { 
+    position: absolute; 
+    right: 25px; 
+    top: 25px; 
+    color: #ef4444; 
+    background: none; 
+    border: none; 
+    cursor: pointer; 
+    opacity: 0.4; 
+}
+.delete-btn:hover { opacity: 1; }
+
+.logout-btn {
+    background: none;
+    border: none;
+    color: #ef4444;
+    width: 100%;
+    margin-top: 20px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* Skeleton Loading Animation */
 .skeleton-post {
     height: 200px;
     background: linear-gradient(90deg, var(--card) 25%, rgba(255,255,255,0.05) 50%, var(--card) 75%);
@@ -109,12 +196,4 @@ h2, h3 { font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; }
     border-radius: 24px;
     margin-bottom: 24px;
 }
-
 @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-
-/* AVATARS */
-.profile-avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent); }
-.profile-avatar.large { width: 120px; height: 120px; margin-bottom: 20px; }
-
-.delete-btn { position: absolute; right: 25px; top: 25px; color: #ef4444; background: none; border: none; cursor: pointer; opacity: 0.4; }
-.delete-btn:hover { opacity: 1; }
