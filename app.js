@@ -28,11 +28,9 @@ function renderPosts(snap, targetId) {
     snap.forEach(pDoc => {
         const d = pDoc.data();
         const id = pDoc.id;
-        
         const post = document.createElement('div');
         post.className = 'post';
 
-        // Delete (Owner Only)
         if(currentUser && d.uid === currentUser.uid) {
             const del = document.createElement('button');
             del.className = 'delete-btn';
@@ -41,7 +39,6 @@ function renderPosts(snap, targetId) {
             post.append(del);
         }
 
-        // Header
         const header = document.createElement('div');
         header.style.cssText = 'display:flex; align-items:center; gap:10px; margin-bottom:12px;';
         header.innerHTML = `
@@ -49,8 +46,6 @@ function renderPosts(snap, targetId) {
             <span style="font-weight:700; cursor:pointer; font-size:0.9rem;" onclick="window.visitProfile('${d.uid}')">${d.userName}</span>
         `;
         post.append(header);
-
-        // Body
         post.innerHTML += `<h3>${d.title}</h3><p style="font-size:0.95rem; color:var(--text-dim); line-height:1.5;">${d.content}</p>`;
 
         if(d.imageUrl) {
@@ -60,7 +55,6 @@ function renderPosts(snap, targetId) {
             post.append(img);
         }
 
-        // Footer
         const footer = document.createElement('div');
         footer.style.cssText = 'margin-top:20px; border-top:1px solid rgba(128,128,128,0.1); padding-top:12px; display:flex; justify-content:space-between; align-items:center;';
         footer.innerHTML = `
@@ -69,7 +63,6 @@ function renderPosts(snap, targetId) {
         `;
         post.append(footer);
 
-        // Replies
         const replyBox = document.createElement('div');
         (d.replies || []).forEach(r => {
             const rDiv = document.createElement('div');
@@ -88,14 +81,15 @@ function renderPosts(snap, targetId) {
             `;
             post.append(rForm);
         }
-
         box.append(post);
     });
 }
 
-// --- ATTACH TO WINDOW FOR HTML ONCLICKS ---
+// --- UPDATED VIEW MANAGER ---
 window.showView = (v) => {
-    ['feed-view', 'profile-view', 'visit-view'].forEach(id => document.getElementById(id).style.display = 'none');
+    ['feed-view', 'profile-view', 'visit-view', 'about-view'].forEach(id => {
+        document.getElementById(id).style.display = 'none';
+    });
     document.getElementById(`${v}-view`).style.display = 'block';
 };
 
@@ -112,7 +106,6 @@ window.visitProfile = async (uid) => {
         document.getElementById('v-bio').textContent = data.bio || "No bio yet.";
         document.getElementById('v-dept').textContent = data.dept || "Campus Member";
         window.showView('visit');
-        
         const q = query(collection(db, "posts"), where("uid", "==", uid), orderBy("time", "desc"));
         onSnapshot(q, (snap) => renderPosts(snap, 'v-posts'));
     }
@@ -123,24 +116,20 @@ window.addPost = async () => {
     const c = document.getElementById('postContent').value;
     const file = document.getElementById('postFile').files[0];
     if(!t || !c || !currentUser) return;
-
     const btn = document.getElementById('uploadBtn');
     btn.textContent = "Uploading...";
     btn.disabled = true;
-
     let url = "";
     if(file) {
         const sRef = ref(storage, `posts/${Date.now()}_${file.name}`);
         await uploadBytes(sRef, file);
         url = await getDownloadURL(sRef);
     }
-
     await addDoc(collection(db, "posts"), {
         title: t, content: c, imageUrl: url, uid: currentUser.uid, 
         userName: currentUser.displayName, userImg: currentUser.photoURL,
         time: Date.now(), likes: 0, replies: []
     });
-
     document.getElementById('postTitle').value = "";
     document.getElementById('postContent').value = "";
     document.getElementById('postFile').value = "";
@@ -161,7 +150,6 @@ window.deletePost = async (id) => {
 };
 
 window.like = (id) => updateDoc(doc(db, "posts", id), { likes: increment(1) });
-
 window.sendReply = async (id) => {
     const input = document.getElementById(`re-${id}`);
     if(!input.value) return;
@@ -171,7 +159,6 @@ window.sendReply = async (id) => {
     input.value = "";
 };
 
-// --- AUTH & INITIAL LOAD ---
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         currentUser = user;
@@ -180,7 +167,6 @@ onAuthStateChanged(auth, async (user) => {
         document.getElementById('editor').style.display = 'block';
         document.getElementById('p-img').src = user.photoURL;
         document.getElementById('p-name').textContent = user.displayName;
-        
         const uDoc = await getDoc(doc(db, "users", user.uid));
         if(!uDoc.exists()) {
             await setDoc(doc(db, "users", user.uid), { name: user.displayName, img: user.photoURL, bio: "", dept: "" });
