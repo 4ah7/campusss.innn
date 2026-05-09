@@ -20,7 +20,8 @@ const provider = new GoogleAuthProvider();
 
 let currentUser = null;
 
-// --- NAVIGATION ---
+// --- CRITICAL: MAKING FUNCTIONS GLOBAL ---
+// This allows the "onclick" buttons in your HTML to work
 window.showView = (viewName) => {
     document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
     const target = document.getElementById(`${viewName}-view`);
@@ -30,91 +31,46 @@ window.showView = (viewName) => {
     }
 };
 
-// --- RENDER ENGINE ---
-function renderPosts(snap, targetId) {
-    const box = document.getElementById(targetId);
-    if(!box) return;
+window.sendReply = async (id) => {
+    const input = document.getElementById(`re-${id}`);
+    if(!input || !input.value || !currentUser) return;
     
-    if (snap.empty) {
-        box.innerHTML = `<div style="text-align:center; padding: 60px; opacity: 0.3;"><i class="fas fa-feather-alt" style="font-size: 3rem; margin-bottom: 15px;"></i><p>The campus is quiet. Be the first to start a conversation!</p></div>`;
-        return;
+    const text = input.value;
+    input.value = "Sending...";
+    input.disabled = true;
+
+    try {
+        await updateDoc(doc(db, "posts", id), {
+            replies: arrayUnion({ 
+                user: currentUser.displayName, 
+                text: text,
+                time: Date.now() 
+            })
+        });
+        input.value = "";
+    } catch (e) {
+        console.error("Reply error:", e);
+        alert("Failed to reply. Try again!");
     }
+    input.disabled = false;
+};
 
-    box.innerHTML = ""; 
-    snap.forEach(pDoc => {
-        const d = pDoc.data();
-        const id = pDoc.id;
-        const post = document.createElement('div');
-        post.className = 'post';
+window.like = (id) => updateDoc(doc(db, "posts", id), { likes: increment(1) });
 
-        // Delete Button
-        if(currentUser && d.uid === currentUser.uid) {
-            post.innerHTML += `<button onclick="window.deletePost('${id}')" class="delete-btn"><i class="fas fa-trash"></i></button>`;
-        }
+window.deletePost = async (id) => { 
+    if(confirm("Permanently delete post?")) await deleteDoc(doc(db, "posts", id)); 
+};
 
-        // Header
-        post.innerHTML += `
-            <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
-                <img src="${d.userImg}" style="width:40px; height:40px; border-radius:50%; cursor:pointer;" onclick="window.visitProfile('${d.uid}')">
-                <div>
-                    <div style="font-weight:700; cursor:pointer;" onclick="window.visitProfile('${d.uid}')">${d.userName}</div>
-                    <div style="font-size:0.7rem; opacity:0.5;">${new Date(d.time).toLocaleDateString()}</div>
-                </div>
-            </div>
-            <h3>${d.title}</h3>
-            <p style="color:var(--text-dim); margin-bottom:15px;">${d.content}</p>
-        `;
-
-        if(d.imageUrl) {
-            post.innerHTML += `<img src="${d.imageUrl}" class="post-img" style="width:100%; border-radius:16px; margin: 10px 0;">`;
-        }
-
-        // Like/Comment Count
-        post.innerHTML += `
-            <div style="display:flex; gap:20px; margin-top:20px; padding-top:15px; border-top:1px solid var(--border);">
-                <span style="cursor:pointer; font-weight:600;" onclick="window.like('${id}')">❤️ ${d.likes || 0}</span>
-                <span style="opacity:0.6;"><i class="far fa-comment"></i> ${d.replies?.length || 0}</span>
-            </div>
-        `;
-
-        // Replies List
-        if(d.replies && d.replies.length > 0) {
-            const rContainer = document.createElement('div');
-            rContainer.className = 'replies-container';
-            d.replies.forEach(r => {
-                rContainer.innerHTML += `<div class="reply-item"><b>${r.user}</b> ${r.text}</div>`;
-            });
-            post.append(rContainer);
-        }
-
-        // Reply Input
-        if(currentUser) {
-            const rForm = document.createElement('div');
-            rForm.className = 'reply-form';
-            rForm.innerHTML = `
-                <input id="re-${id}" class="input-box reply-input" placeholder="Write a reply...">
-                <button onclick="window.sendReply('${id}')" class="btn-primary reply-btn">Reply</button>
-            `;
-            post.append(rForm);
-        }
-
-        box.append(post);
-    });
-}
-
-// --- ACTIONS ---
 window.login = () => signInWithPopup(auth, provider);
 window.logout = () => signOut(auth).then(() => location.reload());
 
-window.sendReply = async (id) => {
-    const input = document.getElementById(`re-${id}`);
-    if(!input.value || !currentUser) return;
-    const text = input.value;
-    input.value = "Sending...";
-    await updateDoc(doc(db, "posts", id), {
-        replies: arrayUnion({ user: currentUser.displayName, text: text })
+window.saveProfile = async () => {
+    if(!currentUser) return;
+    await updateDoc(doc(db, "users", currentUser.uid), {
+        bio: document.getElementById('u-bio').value,
+        dept: document.getElementById('u-dept').value
     });
-    input.value = "";
+    alert("Profile Updated!");
 };
 
 window.visitProfile = async (uid) => {
@@ -135,27 +91,104 @@ window.addPost = async () => {
     const c = document.getElementById('postContent').value;
     const file = document.getElementById('postFile').files[0];
     if(!t || !c || !currentUser) return;
+
     const btn = document.getElementById('uploadBtn');
     btn.disabled = true;
+    btn.textContent = "Posting...";
+
     let url = "";
     if(file) {
         const sRef = ref(storage, `posts/${Date.now()}_${file.name}`);
         await uploadBytes(sRef, file);
         url = await getDownloadURL(sRef);
     }
+
     await addDoc(collection(db, "posts"), {
         title: t, content: c, imageUrl: url, uid: currentUser.uid, 
         userName: currentUser.displayName, userImg: currentUser.photoURL,
         time: Date.now(), likes: 0, replies: []
     });
+
     document.getElementById('postTitle').value = "";
     document.getElementById('postContent').value = "";
+    document.getElementById('postFile').value = "";
     btn.disabled = false;
+    btn.textContent = "Post Update";
 };
 
-window.deletePost = async (id) => { if(confirm("Delete post?")) await deleteDoc(doc(db, "posts", id)); };
-window.like = (id) => updateDoc(doc(db, "posts", id), { likes: increment(1) });
+// --- RENDER ENGINE ---
+function renderPosts(snap, targetId) {
+    const box = document.getElementById(targetId);
+    if(!box) return;
+    
+    if (snap.empty) {
+        box.innerHTML = `<div style="text-align:center; padding: 60px; opacity: 0.3;"><i class="fas fa-feather-alt" style="font-size: 3rem; margin-bottom: 15px;"></i><p>The campus is quiet.</p></div>`;
+        return;
+    }
 
+    box.innerHTML = ""; 
+    snap.forEach(pDoc => {
+        const d = pDoc.data();
+        const id = pDoc.id;
+        const post = document.createElement('div');
+        post.className = 'post';
+
+        // Delete Logic
+        if(currentUser && d.uid === currentUser.uid) {
+            post.innerHTML += `<button onclick="window.deletePost('${id}')" class="delete-btn"><i class="fas fa-trash"></i></button>`;
+        }
+
+        // Content
+        post.innerHTML += `
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
+                <img src="${d.userImg}" style="width:40px; height:40px; border-radius:50%; cursor:pointer;" onclick="window.visitProfile('${d.uid}')">
+                <div>
+                    <div style="font-weight:700; cursor:pointer;" onclick="window.visitProfile('${d.uid}')">${d.userName}</div>
+                    <div style="font-size:0.7rem; opacity:0.5;">${new Date(d.time).toLocaleDateString()}</div>
+                </div>
+            </div>
+            <h3>${d.title}</h3>
+            <p style="color:var(--text-dim); margin-bottom:15px;">${d.content}</p>
+        `;
+
+        if(d.imageUrl) {
+            post.innerHTML += `<img src="${d.imageUrl}" class="post-img">`;
+        }
+
+        // Stats
+        post.innerHTML += `
+            <div style="display:flex; gap:20px; margin-top:20px; padding-top:15px; border-top:1px solid var(--border);">
+                <span style="cursor:pointer; font-weight:600;" onclick="window.like('${id}')">❤️ ${d.likes || 0}</span>
+                <span style="opacity:0.6;"><i class="far fa-comment"></i> ${d.replies?.length || 0}</span>
+            </div>
+        `;
+
+        // Replies Section
+        if(d.replies && d.replies.length > 0) {
+            const rContainer = document.createElement('div');
+            rContainer.className = 'replies-container';
+            d.replies.forEach(r => {
+                rContainer.innerHTML += `<div class="reply-item"><b>${r.user}</b> ${r.text}</div>`;
+            });
+            post.append(rContainer);
+        }
+
+        // Reply Form
+        if(currentUser) {
+            const rForm = document.createElement('div');
+            rForm.className = 'reply-form';
+            rForm.innerHTML = `
+                <input id="re-${id}" class="input-box reply-input" placeholder="Add a comment...">
+                <button onclick="window.sendReply('${id}')" class="btn-primary reply-btn">Reply</button>
+            `;
+            post.append(rForm);
+        }
+
+        box.append(post);
+    });
+}
+
+// --- AUTH OBSERVER ---
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         currentUser = user;
@@ -164,12 +197,14 @@ onAuthStateChanged(auth, async (user) => {
         document.getElementById('editor').style.display = 'block';
         document.getElementById('p-img').src = user.photoURL;
         document.getElementById('p-name').textContent = user.displayName;
+        
         const uDoc = await getDoc(doc(db, "users", user.uid));
         if(!uDoc.exists()) {
             await setDoc(doc(db, "users", user.uid), { name: user.displayName, img: user.photoURL, bio: "", dept: "" });
         } else {
-            document.getElementById('u-bio').value = uDoc.data().bio || "";
-            document.getElementById('u-dept').value = uDoc.data().dept || "";
+            const data = uDoc.data();
+            if(document.getElementById('u-bio')) document.getElementById('u-bio').value = data.bio || "";
+            if(document.getElementById('u-dept')) document.getElementById('u-dept').value = data.dept || "";
         }
     } else {
         currentUser = null;
