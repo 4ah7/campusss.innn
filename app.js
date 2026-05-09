@@ -271,7 +271,8 @@ window.addPost = async () => {
   const title = document.getElementById("postTitle").value.trim();
   const content = document.getElementById("postContent").value.trim();
   const type = document.getElementById("postType")?.value || "General";
-  const file = document.getElementById("postFile").files[0];
+  const file = document.getElementById('postFile').files[0];
+const type = document.getElementById('postType').value;
   const btn = document.getElementById("uploadBtn");
 
   if (!title || !content) {
