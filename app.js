@@ -20,11 +20,9 @@ const provider = new GoogleAuthProvider();
 
 let currentUser = null;
 
-// --- SMARTER VIEW MANAGER ---
+// --- NAVIGATION ---
 window.showView = (viewName) => {
-    const allViews = document.querySelectorAll('.view');
-    allViews.forEach(v => v.style.display = 'none');
-    
+    document.querySelectorAll('.view').forEach(v => v.style.display = 'none');
     const target = document.getElementById(`${viewName}-view`);
     if(target) {
         target.style.display = 'block';
@@ -38,10 +36,7 @@ function renderPosts(snap, targetId) {
     if(!box) return;
     
     if (snap.empty) {
-        box.innerHTML = `<div style="text-align:center; padding: 60px; opacity: 0.3;">
-            <i class="fas fa-feather-alt" style="font-size: 3rem; margin-bottom: 15px;"></i>
-            <p>The campus is quiet. Be the first to start a conversation!</p>
-        </div>`;
+        box.innerHTML = `<div style="text-align:center; padding: 60px; opacity: 0.3;"><i class="fas fa-feather-alt" style="font-size: 3rem; margin-bottom: 15px;"></i><p>The campus is quiet. Be the first to start a conversation!</p></div>`;
         return;
     }
 
@@ -52,10 +47,12 @@ function renderPosts(snap, targetId) {
         const post = document.createElement('div');
         post.className = 'post';
 
+        // Delete Button
         if(currentUser && d.uid === currentUser.uid) {
             post.innerHTML += `<button onclick="window.deletePost('${id}')" class="delete-btn"><i class="fas fa-trash"></i></button>`;
         }
 
+        // Header
         post.innerHTML += `
             <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
                 <img src="${d.userImg}" style="width:40px; height:40px; border-radius:50%; cursor:pointer;" onclick="window.visitProfile('${d.uid}')">
@@ -72,19 +69,53 @@ function renderPosts(snap, targetId) {
             post.innerHTML += `<img src="${d.imageUrl}" class="post-img" style="width:100%; border-radius:16px; margin: 10px 0;">`;
         }
 
+        // Like/Comment Count
         post.innerHTML += `
             <div style="display:flex; gap:20px; margin-top:20px; padding-top:15px; border-top:1px solid var(--border);">
                 <span style="cursor:pointer; font-weight:600;" onclick="window.like('${id}')">❤️ ${d.likes || 0}</span>
                 <span style="opacity:0.6;"><i class="far fa-comment"></i> ${d.replies?.length || 0}</span>
             </div>
         `;
+
+        // Replies List
+        if(d.replies && d.replies.length > 0) {
+            const rContainer = document.createElement('div');
+            rContainer.className = 'replies-container';
+            d.replies.forEach(r => {
+                rContainer.innerHTML += `<div class="reply-item"><b>${r.user}</b> ${r.text}</div>`;
+            });
+            post.append(rContainer);
+        }
+
+        // Reply Input
+        if(currentUser) {
+            const rForm = document.createElement('div');
+            rForm.className = 'reply-form';
+            rForm.innerHTML = `
+                <input id="re-${id}" class="input-box reply-input" placeholder="Write a reply...">
+                <button onclick="window.sendReply('${id}')" class="btn-primary reply-btn">Reply</button>
+            `;
+            post.append(rForm);
+        }
+
         box.append(post);
     });
 }
 
-// --- CORE ACTIONS ---
+// --- ACTIONS ---
 window.login = () => signInWithPopup(auth, provider);
 window.logout = () => signOut(auth).then(() => location.reload());
+
+window.sendReply = async (id) => {
+    const input = document.getElementById(`re-${id}`);
+    if(!input.value || !currentUser) return;
+    const text = input.value;
+    input.value = "Sending...";
+    await updateDoc(doc(db, "posts", id), {
+        replies: arrayUnion({ user: currentUser.displayName, text: text })
+    });
+    input.value = "";
+};
 
 window.visitProfile = async (uid) => {
     window.showView('visit');
@@ -104,37 +135,31 @@ window.addPost = async () => {
     const c = document.getElementById('postContent').value;
     const file = document.getElementById('postFile').files[0];
     if(!t || !c || !currentUser) return;
-
     const btn = document.getElementById('uploadBtn');
-    btn.textContent = "Processing...";
     btn.disabled = true;
-
     let url = "";
     if(file) {
         const sRef = ref(storage, `posts/${Date.now()}_${file.name}`);
         await uploadBytes(sRef, file);
         url = await getDownloadURL(sRef);
     }
-
     await addDoc(collection(db, "posts"), {
         title: t, content: c, imageUrl: url, uid: currentUser.uid, 
         userName: currentUser.displayName, userImg: currentUser.photoURL,
         time: Date.now(), likes: 0, replies: []
     });
-
     document.getElementById('postTitle').value = "";
     document.getElementById('postContent').value = "";
-    btn.textContent = "Post Update";
     btn.disabled = false;
 };
 
-window.deletePost = async (id) => { if(confirm("Permanently delete post?")) await deleteDoc(doc(db, "posts", id)); };
+window.deletePost = async (id) => { if(confirm("Delete post?")) await deleteDoc(doc(db, "posts", id)); };
 window.like = (id) => updateDoc(doc(db, "posts", id), { likes: increment(1) });
 
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         currentUser = user;
-        document.getElementById('authArea').innerHTML = `<img src="${user.photoURL}" class="nav-avatar" style="width:35px; border-radius:50%; border:2px solid var(--accent); cursor:pointer;" onclick="window.showView('profile')">`;
+        document.getElementById('authArea').innerHTML = `<img src="${user.photoURL}" style="width:35px; border-radius:50%; border:2px solid var(--accent); cursor:pointer;" onclick="window.showView('profile')">`;
         document.getElementById('profile-btn').style.display = 'inline';
         document.getElementById('editor').style.display = 'block';
         document.getElementById('p-img').src = user.photoURL;
