@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Campus Inn | Fortress Edition</title>
+    <title>Campus Inn</title>
+    <!-- Icons & Fonts -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
@@ -12,7 +13,7 @@
 
 <nav>
     <div class="logo" onclick="showView('feed')">
-        <img src="logo.svg" alt="Campus Inn Logo" width="35" height="35">
+        <img src="logo.svg" alt="Logo" width="35" height="35">
         <span>Campus Inn</span>
     </div>
     <div style="display:flex; align-items:center;">
@@ -22,6 +23,7 @@
     </div>
 </nav>
 
+<!-- HOME FEED -->
 <div id="feed-view">
     <div id="editor" style="display:none; margin-bottom: 30px;">
         <div class="post">
@@ -34,21 +36,23 @@
     <div id="posts"></div>
 </div>
 
+<!-- OWN PROFILE EDIT VIEW -->
 <div id="profile-view">
     <div class="post" style="text-align:center;">
         <img id="p-img" class="profile-avatar">
         <h2 id="p-name" style="margin:0"></h2>
         <div style="text-align:left; margin-top:25px;">
             <label class="input-label">Bio</label>
-            <input id="u-bio" class="input-box">
-            <label class="input-label">Major</label>
-            <input id="u-dept" class="input-box">
+            <input id="u-bio" class="input-box" placeholder="Tell us about yourself...">
+            <label class="input-label">Major/Department</label>
+            <input id="u-dept" class="input-box" placeholder="e.g. Computer Science">
             <button onclick="saveProfile()" class="btn-primary">Save Changes</button>
             <button onclick="logout()" class="logout-btn">Sign Out</button>
         </div>
     </div>
 </div>
 
+<!-- VISIT OTHERS VIEW -->
 <div id="visit-view">
     <div class="post" style="text-align:center;">
         <img id="v-img" class="profile-avatar" style="border:2px solid var(--text-dim)">
@@ -56,6 +60,7 @@
         <p id="v-bio" class="visit-bio"></p>
         <p id="v-dept" class="visit-dept"></p>
     </div>
+    <h3 style="margin: 20px 0; font-size: 0.9rem; color: var(--accent);">USER POSTS</h3>
     <div id="v-posts"></div>
 </div>
 
