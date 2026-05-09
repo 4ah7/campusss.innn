@@ -6,6 +6,20 @@
     --text-dim: #9ca3af; 
 }
 
+/* --- THE VIEW FIX (This solves your problem!) --- */
+#feed-view, #profile-view, #visit-view, #about-view { 
+    display: none !important; 
+    padding: 30px 8%; 
+    max-width: 700px; 
+    margin: 0 auto; 
+}
+
+/* Show Home Feed ONLY on start */
+#feed-view { 
+    display: block !important; 
+}
+
+/* --- THE REST OF THE STYLE --- */
 body { 
     margin: 0; 
     font-family: 'Plus Jakarta Sans', sans-serif; 
@@ -13,16 +27,6 @@ body {
     color: var(--text-main); 
     min-height: 100vh; 
 }
-
-/* --- VIEW MANAGER --- */
-#feed-view, #profile-view, #visit-view, #about-view { 
-    padding: 30px 8%; 
-    max-width: 700px; 
-    margin: 0 auto; 
-    display: none; 
-}
-
-#feed-view { display: block; }
 
 nav { 
     display: flex; 
@@ -38,50 +42,20 @@ nav {
 }
 
 .logo {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-weight: 800;
-    font-size: 1.6rem;
-    letter-spacing: -0.5px;
-    cursor: pointer;
-    background: linear-gradient(90deg, #818cf8, #c084fc);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 1.6rem; cursor: pointer;
+    background: linear-gradient(90deg, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
 }
 
-.nav-link { cursor: pointer; font-weight: 600; font-size: 0.85rem; color: var(--text-dim); margin-right: 15px; transition: 0.2s; }
+.nav-link { cursor: pointer; font-weight: 600; font-size: 0.85rem; color: var(--text-dim); margin-right: 15px; }
 .nav-link:hover { color: var(--accent); }
 
-.post { 
-    background: var(--glass); 
-    border-radius: 20px; 
-    padding: 24px; 
-    border: 1px solid rgba(128,128,128,0.1); 
-    margin-bottom: 20px; 
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1); 
-    position: relative;
-}
-
-/* Legal Box inside About Page */
-.legal-box {
-    margin-top: 30px;
-    padding: 15px;
-    background: rgba(0,0,0,0.2);
-    border-radius: 12px;
-    border-left: 4px solid var(--accent);
-}
-.legal-box h4 { margin: 0 0 10px 0; font-size: 0.9rem; }
-.legal-box p { font-size: 0.75rem; margin: 5px 0; opacity: 0.7; }
-
+.post { background: var(--glass); border-radius: 20px; padding: 24px; border: 1px solid rgba(128,128,128,0.1); margin-bottom: 20px; position: relative; }
 .post-img { width: 100%; border-radius: 12px; margin: 16px 0; object-fit: cover; max-height: 400px; }
-.input-box { background: rgba(128,128,128,0.05); border: 1px solid rgba(128,128,128,0.1); color: var(--text-main); padding: 12px; border-radius: 12px; width: 100%; margin-bottom: 10px; box-sizing: border-box; font-family: inherit; }
-.btn-primary { background: var(--accent); color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; width: 100%; transition: 0.2s; }
-.btn-primary:hover { opacity: 0.9; transform: scale(0.98); }
+
+.input-box { background: rgba(128,128,128,0.05); border: 1px solid rgba(128,128,128,0.1); color: var(--text-main); padding: 12px; border-radius: 12px; width: 100%; margin-bottom: 10px; box-sizing: border-box; }
+.btn-primary { background: var(--accent); color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; width: 100%; }
+
 .profile-avatar { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--accent); object-fit: cover; margin-bottom: 15px; }
-.delete-btn { position: absolute; top: 20px; right: 20px; background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.9rem; opacity: 0.5; }
-.delete-btn:hover { opacity: 1; }
-.reply-item { background: rgba(128,128,128,0.05); padding: 10px; border-radius: 10px; margin-top: 8px; font-size: 0.85rem; border-left: 3px solid var(--accent); }
-.visit-bio { color: var(--text-dim); margin: 5px 0; font-style: italic; }
-.visit-dept { font-weight: bold; color: var(--accent); font-size: 0.85rem; text-transform: uppercase; }
+.legal-box { margin-top: 30px; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 12px; border-left: 4px solid var(--accent); }
+.legal-box p { font-size: 0.75rem; opacity: 0.7; }
 .logout-btn { background: none; border: none; color: #ef4444; width: 100%; margin-top: 20px; cursor: pointer; font-weight: 600; }
