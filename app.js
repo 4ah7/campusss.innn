@@ -48,6 +48,36 @@ const storage = getStorage(app);
 const provider = new GoogleAuthProvider();
 
 let currentUser = null;
+// IMAGE PREVIEW
+
+const fileInput = document.getElementById('postFile');
+
+if(fileInput){
+    fileInput.addEventListener('change', () => {
+
+        const file = fileInput.files[0];
+
+        const preview = document.getElementById('filePreview');
+        const info = document.getElementById('fileInfo');
+
+        if(!file){
+            preview.style.display = 'none';
+            info.textContent = '';
+            return;
+        }
+
+        info.textContent = `Selected: ${file.name}`;
+
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+        };
+
+        reader.readAsDataURL(file);
+    });
+}
 let currentVisitUid = null;
 let currentFilter = "All";
 let searchTerm = "";
