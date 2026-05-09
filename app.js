@@ -382,7 +382,7 @@ function createReplyItem(reply) {
 function createPostCard(d, id) {
   const post = document.createElement("div");
   post.className = `post ${typeClass(d.type)}`;
-
+post.dataset.type = d.type || "General";
   const badge = document.createElement("span");
   badge.className = `badge ${badgeClass(d.type)}`;
   badge.textContent = (d.type || "General").toUpperCase();
