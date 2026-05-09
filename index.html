@@ -23,7 +23,7 @@
     </div>
 </nav>
 
-<!-- HOME FEED -->
+<!-- SECTION 1: HOME FEED -->
 <div id="feed-view">
     <div id="editor" style="display:none; margin-bottom: 30px;">
         <div class="post">
@@ -36,37 +36,31 @@
     <div id="posts"></div>
 </div>
 
-<!-- ABOUT PAGE -->
+<!-- SECTION 2: ABOUT PAGE -->
 <div id="about-view">
     <div class="post">
         <h2 style="color: var(--accent); margin-top: 0;">About Campus Inn</h2>
-        <p>Welcome to the digital heart of our campus. <strong>Campus Inn</strong> was built to bridge the gap between students, faculty, and the daily buzz of university life.</p>
-        
-        <h3 style="font-size: 1rem; margin-top: 25px;">Our Mission</h3>
-        <p style="font-size: 0.9rem; color: var(--text-dim);">To provide a secure, high-speed, and beautiful space for students to share ideas, find resources, and stay connected without the noise of traditional social media.</p>
-
+        <p>Welcome to the digital heart of our campus. <strong>Campus Inn</strong> was built to bridge the gap between students, faculty, and university life.</p>
         <div class="legal-box">
             <h4>Copyright & Legal</h4>
             <p>© 2026 Campus Inn. All rights reserved.</p>
-            <p>Unauthorized duplication or "scraping" of user data is strictly prohibited under the Campus Digital Conduct Policy.</p>
+            <p>Unauthorized duplication of user data is strictly prohibited.</p>
         </div>
-
         <div style="text-align: center; margin-top: 40px; opacity: 0.5; font-size: 0.8rem;">
-            <p>Version 1.0.2 "Shield-Pin" Update</p>
-            <p>Made with ❤️ for the Campus Community</p>
+            <p>Version 1.0.2 | Made with ❤️ for the Campus</p>
         </div>
     </div>
 </div>
 
-<!-- OWN PROFILE EDIT VIEW -->
+<!-- SECTION 3: OWN PROFILE -->
 <div id="profile-view">
     <div class="post" style="text-align:center;">
         <img id="p-img" class="profile-avatar">
         <h2 id="p-name" style="margin:0"></h2>
         <div style="text-align:left; margin-top:25px;">
-            <label class="input-label">Bio</label>
+            <label>Bio</label>
             <input id="u-bio" class="input-box" placeholder="Tell us about yourself...">
-            <label class="input-label">Major/Department</label>
+            <label>Major/Department</label>
             <input id="u-dept" class="input-box" placeholder="e.g. Computer Science">
             <button onclick="saveProfile()" class="btn-primary">Save Changes</button>
             <button onclick="logout()" class="logout-btn">Sign Out</button>
@@ -74,7 +68,7 @@
     </div>
 </div>
 
-<!-- VISIT OTHERS VIEW -->
+<!-- SECTION 4: VISIT OTHERS -->
 <div id="visit-view">
     <div class="post" style="text-align:center;">
         <img id="v-img" class="profile-avatar" style="border:2px solid var(--text-dim)">
