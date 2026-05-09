@@ -588,7 +588,47 @@ onSnapshot(query(collection(db, "posts"), orderBy("time", "desc")), (snap) => {
     renderFeed();
   }
 });
+// FILTER SYSTEM
 
+let activeFilter = "All";
+
+document.querySelectorAll('.filter-chip').forEach(btn => {
+
+    btn.addEventListener('click', () => {
+
+        document.querySelectorAll('.filter-chip')
+            .forEach(b => b.classList.remove('active'));
+
+        btn.classList.add('active');
+
+        activeFilter = btn.textContent.trim();
+
+        applyFilters();
+    });
+
+});
+
+function applyFilters(){
+
+    const posts = document.querySelectorAll('#posts .post');
+
+    posts.forEach(post => {
+
+        const type = post.dataset.type || "General";
+
+        if(activeFilter === "All"){
+            post.style.display = "block";
+        }
+        else if(type === activeFilter){
+            post.style.display = "block";
+        }
+        else{
+            post.style.display = "none";
+        }
+
+    });
+
+}
 window.showView = (viewName) => {
   document.querySelectorAll(".view").forEach((v) => {
     v.style.display = "none";
