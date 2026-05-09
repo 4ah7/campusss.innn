@@ -12,6 +12,7 @@ import {
   updateDoc,
   increment,
   arrayUnion,
+  where,
   deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -47,53 +48,46 @@ const storage = getStorage(app);
 const provider = new GoogleAuthProvider();
 
 let currentUser = null;
-let allPosts = [];
-let currentView = "feed";
+let currentVisitUid = null;
 let currentFilter = "All";
 let searchTerm = "";
-let currentVisitUid = null;
+let allPosts = [];
+let visitPostsUnsub = null;
 
-const els = {
-  authArea: document.getElementById("authArea"),
-  profileBtn: document.getElementById("profile-btn"),
-  editor: document.getElementById("editor"),
-  posts: document.getElementById("posts"),
-  vPosts: document.getElementById("v-posts"),
-  pImg: document.getElementById("p-img"),
-  pName: document.getElementById("p-name"),
-  uBio: document.getElementById("u-bio"),
-  uDept: document.getElementById("u-dept"),
-  vImg: document.getElementById("v-img"),
-  vName: document.getElementById("v-name"),
-  vBio: document.getElementById("v-bio"),
-  vDept: document.getElementById("v-dept"),
-  searchBar: document.getElementById("searchBar"),
-  filterButtons: document.querySelectorAll("[data-filter]")
-};
+const authArea = document.getElementById("authArea");
+const profileBtn = document.getElementById("profile-btn");
+const editor = document.getElementById("editor");
+const postsBox = document.getElementById("posts");
+const visitPostsBox = document.getElementById("v-posts");
+const searchBar = document.getElementById("searchBar");
+const filterButtons = document.querySelectorAll(".filter-chip");
 
 window.showView = (viewName) => {
-  currentView = viewName;
+  document.querySelectorAll(".view").forEach((v) => {
+    v.style.display = "none";
+  });
 
-  document.querySelectorAll(".view").forEach((v) => (v.style.display = "none"));
-  document.getElementById(`${viewName}-view`).style.display = "block";
+  const view = document.getElementById(`${viewName}-view`);
+  if (view) view.style.display = "block";
 
-  document.getElementById("nav-home").classList.toggle("active", viewName === "feed");
-  document.getElementById("nav-about").classList.toggle("active", viewName === "about");
-  document.getElementById("profile-btn").classList.toggle("active", viewName === "profile");
+  document.querySelectorAll(".nav-link").forEach((nav) => nav.classList.remove("active"));
+
+  if (viewName === "feed") document.getElementById("nav-home")?.classList.add("active");
+  if (viewName === "about") document.getElementById("nav-about")?.classList.add("active");
+  if (viewName === "profile") profileBtn?.classList.add("active");
+
+  if (viewName !== "visit" && visitPostsUnsub) {
+    visitPostsUnsub();
+    visitPostsUnsub = null;
+  }
 
   window.scrollTo({ top: 0, behavior: "smooth" });
-
-  if (viewName === "feed") renderFeed();
-  if (viewName === "visit") renderVisit();
 };
 
 window.login = () => signInWithPopup(auth, provider);
 
-window.logout = async () => {
-  await signOut(auth);
-  currentUser = null;
-  currentVisitUid = null;
-  window.showView("feed");
+window.logout = () => {
+  signOut(auth).then(() => location.reload());
 };
 
 window.saveProfile = async () => {
@@ -104,103 +98,177 @@ window.saveProfile = async () => {
     {
       name: currentUser.displayName || "",
       img: currentUser.photoURL || "",
-      bio: els.uBio.value.trim(),
-      dept: els.uDept.value.trim()
+      bio: document.getElementById("u-bio").value.trim(),
+      dept: document.getElementById("u-dept").value.trim()
     },
     { merge: true }
   );
 
-  alert("Profile saved!");
-};
-
-window.visitProfile = async (uid) => {
-  currentVisitUid = uid;
-
-  const uDoc = await getDoc(doc(db, "users", uid));
-  if (!uDoc.exists()) return;
-
-  const data = uDoc.data();
-  els.vImg.src = data.img || "";
-  els.vName.textContent = data.name || "User";
-  els.vBio.textContent = data.bio || "No bio yet.";
-  els.vDept.textContent = data.dept || "Campus Member";
-
-  window.showView("visit");
-  renderVisit();
+  alert("Profile updated!");
 };
 
 window.like = async (id) => {
   if (!currentUser) {
-    alert("Login to like posts!");
+    alert("Login first!");
     return;
   }
-  await updateDoc(doc(db, "posts", id), { likes: increment(1) });
+
+  await updateDoc(doc(db, "posts", id), {
+    likes: increment(1)
+  });
 };
 
-window.deletePost = async (id, ownerUid) => {
-  if (!currentUser) return;
-  if (currentUser.uid !== ownerUid) return alert("You can only delete your own post.");
-
-  if (confirm("Delete this post?")) {
+window.deletePost = async (id) => {
+  if (confirm("Delete this post permanently?")) {
     await deleteDoc(doc(db, "posts", id));
   }
 };
 
 window.sendReply = async (id) => {
-  if (!currentUser) {
-    alert("Login to reply!");
+  const input = document.getElementById(`re-${id}`);
+  if (!input || !input.value.trim() || !currentUser) return;
+
+  await updateDoc(doc(db, "posts", id), {
+    replies: arrayUnion({
+      user: currentUser.displayName || "User",
+      text: input.value.trim(),
+      time: Date.now()
+    })
+  });
+
+  input.value = "";
+};
+
+window.visitProfile = async (uid) => {
+  if (visitPostsUnsub) {
+    visitPostsUnsub();
+    visitPostsUnsub = null;
+  }
+
+  currentVisitUid = uid;
+  window.showView("visit");
+
+  const uDoc = await getDoc(doc(db, "users", uid));
+  if (!uDoc.exists()) {
+    document.getElementById("v-img").src = "";
+    document.getElementById("v-name").textContent = "User";
+    document.getElementById("v-bio").textContent = "No bio.";
+    document.getElementById("v-dept").textContent = "Campus Member";
+    renderPosts([], "v-posts");
     return;
   }
 
-  const input = document.getElementById(`re-${id}`);
-  if (!input || !input.value.trim()) return;
+  const data = uDoc.data();
+  document.getElementById("v-img").src = data.img || "";
+  document.getElementById("v-name").textContent = data.name || "User";
+  document.getElementById("v-bio").textContent = data.bio || "No bio.";
+  document.getElementById("v-dept").textContent = data.dept || "Campus Member";
 
-  const text = input.value.trim();
-  input.value = "";
-  input.disabled = true;
+  const q = query(collection(db, "posts"), where("uid", "==", uid));
+  visitPostsUnsub = onSnapshot(q, (snap) => {
+    const items = snap.docs
+      .map((d) => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (b.time || 0) - (a.time || 0));
 
-  try {
-    await updateDoc(doc(db, "posts", id), {
-      replies: arrayUnion({
-        user: currentUser.displayName || "User",
-        text,
-        time: Date.now()
-      })
-    });
-  } catch (err) {
-    console.error("Reply error:", err);
-    alert("Could not send reply.");
-  } finally {
-    input.disabled = false;
-  }
+    renderPosts(items, "v-posts");
+  });
 };
 
+async function compressImage(file, maxWidth = 1280, quality = 0.78) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+
+      const scale = Math.min(maxWidth / img.width, 1);
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      canvas.toBlob(
+        (blob) => {
+          if (blob) resolve(blob);
+          else reject(new Error("Compression failed"));
+        },
+        "image/jpeg",
+        quality
+      );
+    };
+
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+const postFileInput = document.getElementById("postFile");
+const fileInfo = document.getElementById("fileInfo");
+const filePreview = document.getElementById("filePreview");
+
+if (postFileInput) {
+  postFileInput.addEventListener("change", () => {
+    const file = postFileInput.files[0];
+
+    if (!file) {
+      if (fileInfo) fileInfo.textContent = "";
+      if (filePreview) {
+        filePreview.style.display = "none";
+        filePreview.src = "";
+      }
+      return;
+    }
+
+    if (fileInfo) {
+      fileInfo.textContent = `Selected: ${file.name} (${Math.round(file.size / 1024)} KB)`;
+    }
+
+    if (filePreview) {
+      const localUrl = URL.createObjectURL(file);
+      filePreview.src = localUrl;
+      filePreview.style.display = "block";
+    }
+  });
+}
+
 window.addPost = async () => {
-  if (!currentUser) return alert("Login first!");
+  if (!currentUser) {
+    alert("Please login first.");
+    return;
+  }
 
   const title = document.getElementById("postTitle").value.trim();
   const content = document.getElementById("postContent").value.trim();
-  const type = document.getElementById("postType").value;
+  const type = document.getElementById("postType")?.value || "General";
   const file = document.getElementById("postFile").files[0];
   const btn = document.getElementById("uploadBtn");
 
-  if (!title || !content) return alert("Please fill title and content.");
-
-  if (file && file.size > 3 * 1024 * 1024) {
-    alert("Please choose an image smaller than 3MB.");
+  if (!title || !content) {
+    alert("Please fill title and content.");
     return;
   }
 
   btn.disabled = true;
-  btn.textContent = "Posting...";
-
-  let imageUrl = "";
+  btn.textContent = "Uploading...";
 
   try {
+    let imageUrl = "";
+
     if (file) {
-      const sRef = ref(storage, `posts/${Date.now()}_${file.name}`);
-      await uploadBytes(sRef, file);
-      imageUrl = await getDownloadURL(sRef);
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Image too large. Max 5MB.");
+        btn.disabled = false;
+        btn.textContent = "Post Update";
+        return;
+      }
+
+      const compressed = await compressImage(file);
+      const fileName = `posts/${Date.now()}_${file.name.replace(/\s+/g, "_")}`;
+      const storageRef = ref(storage, fileName);
+
+      await uploadBytes(storageRef, compressed);
+      imageUrl = await getDownloadURL(storageRef);
     }
 
     await addDoc(collection(db, "posts"), {
@@ -219,34 +287,20 @@ window.addPost = async () => {
     document.getElementById("postTitle").value = "";
     document.getElementById("postContent").value = "";
     document.getElementById("postFile").value = "";
+
+    if (fileInfo) fileInfo.textContent = "";
+    if (filePreview) {
+      filePreview.style.display = "none";
+      filePreview.src = "";
+    }
   } catch (err) {
-    console.error("Post error:", err);
-    alert("Could not publish post.");
+    console.error(err);
+    alert("Upload failed.");
   } finally {
     btn.disabled = false;
     btn.textContent = "Post Update";
   }
 };
-
-window.toggleFilter = (type) => {
-  currentFilter = type;
-  els.filterButtons.forEach((btn) => {
-    btn.classList.toggle("active", btn.dataset.filter === type);
-  });
-  renderFeed();
-};
-
-function timeAgo(ts) {
-  const diff = Date.now() - ts;
-  const mins = Math.floor(diff / 60000);
-  const hrs = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
-
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${days}d ago`;
-}
 
 function badgeClass(type) {
   const t = (type || "General").toLowerCase();
@@ -264,26 +318,21 @@ function typeClass(type) {
   return "type-general";
 }
 
-function filteredPosts() {
-  let posts = [...allPosts];
+function matchSearch(post) {
+  if (!searchTerm) return true;
+  const hay = [
+    post.title || "",
+    post.content || "",
+    post.userName || "",
+    post.type || ""
+  ].join(" ").toLowerCase();
 
-  if (currentFilter !== "All") {
-    posts = posts.filter((p) => (p.type || "General") === currentFilter);
-  }
+  return hay.includes(searchTerm);
+}
 
-  if (searchTerm) {
-    posts = posts.filter((p) => {
-      const hay = [
-        p.title || "",
-        p.content || "",
-        p.userName || "",
-        p.type || ""
-      ].join(" ").toLowerCase();
-      return hay.includes(searchTerm);
-    });
-  }
-
-  return posts;
+function matchFilter(post) {
+  if (currentFilter === "All") return true;
+  return (post.type || "General") === currentFilter;
 }
 
 function createReplyItem(reply) {
@@ -300,135 +349,119 @@ function createReplyItem(reply) {
   return item;
 }
 
-function createPostCard(post) {
-  const d = post;
-  const id = post.id;
-  const card = document.createElement("article");
-  card.className = `post ${typeClass(d.type)}`;
+function createPostCard(d, id) {
+  const post = document.createElement("div");
+  post.className = `post ${typeClass(d.type)}`;
 
   const badge = document.createElement("span");
   badge.className = `badge ${badgeClass(d.type)}`;
   badge.textContent = (d.type || "General").toUpperCase();
-  card.appendChild(badge);
+  post.appendChild(badge);
 
-  const top = document.createElement("div");
-  top.className = "post-top";
-
-  const userWrap = document.createElement("div");
-  userWrap.className = "user-wrap";
+  const header = document.createElement("div");
+  header.style.cssText = "display:flex;align-items:center;gap:12px;margin-bottom:20px;";
 
   const avatar = document.createElement("img");
-  avatar.className = "user-avatar";
-  avatar.src = d.userImg || "https://via.placeholder.com/80";
+  avatar.src = d.userImg || "";
   avatar.alt = d.userName || "User";
-  avatar.onclick = () => visitProfile(d.uid);
+  avatar.style.cssText = "width:40px;height:40px;border-radius:50%;cursor:pointer;object-fit:cover;";
+  avatar.onclick = () => window.visitProfile(d.uid);
 
-  const userTextWrap = document.createElement("div");
+  const metaWrap = document.createElement("div");
 
-  const userBtn = document.createElement("button");
-  userBtn.className = "user-link";
-  userBtn.textContent = d.userName || "Campus Member";
-  userBtn.onclick = () => visitProfile(d.uid);
+  const userName = document.createElement("div");
+  userName.style.cssText = "font-weight:700;cursor:pointer;";
+  userName.textContent = d.userName || "User";
+  userName.onclick = () => window.visitProfile(d.uid);
 
-  const meta = document.createElement("div");
-  meta.className = "post-meta";
-  meta.textContent = `${timeAgo(d.time || Date.now())}`;
+  const date = document.createElement("div");
+  date.style.cssText = "font-size:0.7rem;opacity:0.5;";
+  date.textContent = new Date(d.time || Date.now()).toLocaleDateString();
 
-  userTextWrap.append(userBtn, meta);
-  userWrap.append(avatar, userTextWrap);
-
-  const rightMeta = document.createElement("div");
-  rightMeta.className = "post-meta";
-  rightMeta.textContent = new Date(d.time || Date.now()).toLocaleDateString();
-
-  top.append(userWrap, rightMeta);
-  card.appendChild(top);
+  metaWrap.append(userName, date);
+  header.append(avatar, metaWrap);
+  post.appendChild(header);
 
   const title = document.createElement("h3");
   title.textContent = d.title || "";
-  card.appendChild(title);
+  post.appendChild(title);
 
   const content = document.createElement("p");
-  content.className = "post-content";
+  content.style.color = "var(--text-dim)";
   content.textContent = d.content || "";
-  card.appendChild(content);
+  post.appendChild(content);
 
   if (d.imageUrl) {
     const img = document.createElement("img");
-    img.className = "post-img";
     img.src = d.imageUrl;
+    img.className = "post-img";
     img.alt = "Post image";
-    card.appendChild(img);
+    post.appendChild(img);
   }
 
   const footer = document.createElement("div");
-  footer.className = "post-footer";
+  footer.style.cssText = "display:flex;gap:20px;margin-top:20px;";
 
-  const leftActions = document.createElement("div");
-  leftActions.className = "post-action";
-  leftActions.textContent = `❤️ ${d.likes || 0}`;
-  leftActions.onclick = () => like(id);
+  const likeBtn = document.createElement("span");
+  likeBtn.style.cssText = "cursor:pointer;font-weight:600;";
+  likeBtn.textContent = `❤️ ${d.likes || 0}`;
+  likeBtn.onclick = () => window.like(id);
 
-  const comments = document.createElement("div");
-  comments.className = "post-action muted";
-  comments.textContent = `💬 ${(d.replies || []).length}`;
+  const commentCount = document.createElement("span");
+  commentCount.textContent = `💬 ${(d.replies || []).length}`;
 
-  footer.append(leftActions, comments);
-  card.appendChild(footer);
+  footer.append(likeBtn, commentCount);
+  post.appendChild(footer);
 
-  const repliesWrap = document.createElement("div");
-  repliesWrap.className = "replies-container";
+  if (d.replies && d.replies.length > 0) {
+    const repliesContainer = document.createElement("div");
+    repliesContainer.className = "replies-container";
 
-  (d.replies || []).forEach((reply) => {
-    repliesWrap.appendChild(createReplyItem(reply));
-  });
+    d.replies.forEach((reply) => {
+      repliesContainer.appendChild(createReplyItem(reply));
+    });
+
+    post.appendChild(repliesContainer);
+  }
 
   if (currentUser) {
     const replyForm = document.createElement("div");
     replyForm.className = "reply-form";
 
     const input = document.createElement("input");
-    input.className = "input-box reply-input";
     input.id = `re-${id}`;
+    input.className = "input-box reply-input";
     input.placeholder = "Add a comment...";
 
-    const btn = document.createElement("button");
-    btn.className = "btn-primary reply-btn";
-    btn.textContent = "Reply";
-    btn.onclick = () => sendReply(id);
+    const replyBtn = document.createElement("button");
+    replyBtn.className = "btn-primary reply-btn";
+    replyBtn.textContent = "Reply";
+    replyBtn.onclick = () => window.sendReply(id);
 
-    replyForm.append(input, btn);
-    repliesWrap.appendChild(replyForm);
-  } else {
-    const prompt = document.createElement("div");
-    prompt.className = "reply-item";
-    prompt.style.opacity = "0.8";
-    prompt.textContent = "Login to reply to this post.";
-    repliesWrap.appendChild(prompt);
+    replyForm.append(input, replyBtn);
+    post.appendChild(replyForm);
   }
-
-  card.appendChild(repliesWrap);
 
   if (currentUser && currentUser.uid === d.uid) {
-    const del = document.createElement("button");
-    del.className = "logout-btn";
-    del.style.marginTop = "14px";
-    del.style.color = "#f87171";
-    del.textContent = "Delete post";
-    del.onclick = () => deletePost(id, d.uid);
-    card.appendChild(del);
+    const deleteBtn = document.createElement("button");
+    deleteBtn.className = "logout-btn";
+    deleteBtn.style.marginTop = "14px";
+    deleteBtn.style.color = "#f87171";
+    deleteBtn.textContent = "Delete post";
+    deleteBtn.onclick = () => window.deletePost(id);
+    post.appendChild(deleteBtn);
   }
 
-  return card;
+  return post;
 }
 
-function renderList(list, target) {
-  const box = document.getElementById(target);
+function renderPosts(posts, targetId) {
+  const box = document.getElementById(targetId);
   if (!box) return;
 
   box.innerHTML = "";
 
-  if (!list.length) {
+  if (!posts || posts.length === 0) {
     const empty = document.createElement("div");
     empty.className = "empty-state";
     empty.innerHTML = `<i class="fas fa-feather-alt"></i><p>The campus is quiet right now.</p>`;
@@ -436,56 +469,56 @@ function renderList(list, target) {
     return;
   }
 
-  list.forEach((post) => box.appendChild(createPostCard(post)));
+  posts.forEach((post) => {
+    const id = post.id;
+    box.appendChild(createPostCard(post, id));
+  });
 }
 
 function renderFeed() {
-  renderList(filteredPosts(), "posts");
+  const filtered = allPosts.filter((p) => matchFilter(p) && matchSearch(p));
+  renderPosts(filtered, "posts");
 }
 
-function renderVisit() {
-  if (!currentVisitUid) return;
-  const list = allPosts.filter((p) => p.uid === currentVisitUid);
-  renderList(list, "v-posts");
+function setupFilters() {
+  filterButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const text = btn.textContent.trim();
+      currentFilter = text;
+      filterButtons.forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      renderFeed();
+    });
+  });
 }
 
-window.showView = (viewName) => {
-  currentView = viewName;
+if (searchBar) {
+  searchBar.addEventListener("input", () => {
+    searchTerm = searchBar.value.trim().toLowerCase();
+    renderFeed();
+  });
+}
 
-  document.querySelectorAll(".view").forEach((v) => (v.style.display = "none"));
-  const view = document.getElementById(`${viewName}-view`);
-  if (view) view.style.display = "block";
-
-  document.getElementById("nav-home").classList.toggle("active", viewName === "feed");
-  document.getElementById("nav-about").classList.toggle("active", viewName === "about");
-
-  if (viewName === "profile") {
-    document.getElementById("profile-btn").classList.add("active");
-  } else {
-    document.getElementById("profile-btn").classList.remove("active");
-  }
-
-  window.scrollTo({ top: 0, behavior: "smooth" });
-
-  if (viewName === "feed") renderFeed();
-  if (viewName === "visit") renderVisit();
-};
+setupFilters();
 
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     currentUser = user;
 
-    els.authArea.innerHTML = `
-      <img src="${user.photoURL || ""}" alt="Me"
-           style="width:34px; height:34px; border-radius:50%; object-fit:cover; cursor:pointer; border:2px solid var(--accent);"
-           onclick="showView('profile')">
+    authArea.innerHTML = `
+      <img src="${user.photoURL || ""}" alt="me"
+           style="width:35px;height:35px;border-radius:50%;cursor:pointer;object-fit:cover;"
+           onclick="window.showView('profile')">
     `;
 
-    els.profileBtn.style.display = "inline";
-    els.editor.style.display = "block";
+    if (profileBtn) profileBtn.style.display = "inline";
+    if (editor) editor.style.display = "block";
 
-    els.pImg.src = user.photoURL || "";
-    els.pName.textContent = user.displayName || "My Profile";
+    const pImg = document.getElementById("p-img");
+    const pName = document.getElementById("p-name");
+
+    if (pImg) pImg.src = user.photoURL || "";
+    if (pName) pName.textContent = user.displayName || "My Profile";
 
     const uDoc = await getDoc(doc(db, "users", user.uid));
     if (!uDoc.exists()) {
@@ -495,103 +528,54 @@ onAuthStateChanged(auth, async (user) => {
         bio: "",
         dept: ""
       });
-      els.uBio.value = "";
-      els.uDept.value = "";
     } else {
       const data = uDoc.data();
-      els.uBio.value = data.bio || "";
-      els.uDept.value = data.dept || "";
+      const bio = document.getElementById("u-bio");
+      const dept = document.getElementById("u-dept");
+      if (bio) bio.value = data.bio || "";
+      if (dept) dept.value = data.dept || "";
     }
 
     renderFeed();
   } else {
     currentUser = null;
-    els.authArea.innerHTML = `<button onclick="login()" class="btn-primary" style="width:auto; padding:8px 14px;">Login</button>`;
-    els.profileBtn.style.display = "none";
-    els.editor.style.display = "none";
-    currentVisitUid = null;
-    if (currentView === "profile" || currentView === "visit") showView("feed");
-    renderFeed();
-  }
-});
+    authArea.innerHTML = `<button onclick="window.login()" class="btn-primary">Login</button>`;
+    if (profileBtn) profileBtn.style.display = "none";
+    if (editor) editor.style.display = "none";
 
-window.addPost = async () => {
-  if (!currentUser) return alert("Login first!");
-
-  const title = document.getElementById("postTitle").value.trim();
-  const content = document.getElementById("postContent").value.trim();
-  const type = document.getElementById("postType").value;
-  const file = document.getElementById("postFile").files[0];
-  const btn = document.getElementById("uploadBtn");
-
-  if (!title || !content) return alert("Please fill title and content.");
-
-  if (file && file.size > 3 * 1024 * 1024) {
-    alert("Please choose an image smaller than 3MB.");
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = "Posting...";
-
-  try {
-    let imageUrl = "";
-
-    if (file) {
-      const sRef = ref(storage, `posts/${Date.now()}_${file.name}`);
-      await uploadBytes(sRef, file);
-      imageUrl = await getDownloadURL(sRef);
+    if (visitPostsUnsub) {
+      visitPostsUnsub();
+      visitPostsUnsub = null;
     }
 
-    await addDoc(collection(db, "posts"), {
-      title,
-      content,
-      type,
-      imageUrl,
-      uid: currentUser.uid,
-      userName: currentUser.displayName || "User",
-      userImg: currentUser.photoURL || "",
-      time: Date.now(),
-      likes: 0,
-      replies: []
-    });
-
-    document.getElementById("postTitle").value = "";
-    document.getElementById("postContent").value = "";
-    document.getElementById("postFile").value = "";
-  } catch (err) {
-    console.error(err);
-    alert("Could not upload post.");
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "Post Update";
+    renderFeed();
   }
-};
-
-window.searchPosts = () => {
-  searchTerm = (els.searchBar.value || "").trim().toLowerCase();
-  renderFeed();
-};
-
-window.setFilter = (type) => {
-  currentFilter = type;
-  els.filterButtons.forEach((btn) => {
-    btn.classList.toggle("active", btn.dataset.filter === type);
-  });
-  renderFeed();
-};
-
-els.searchBar.addEventListener("input", window.searchPosts);
-
-els.filterButtons.forEach((btn) => {
-  btn.addEventListener("click", () => window.setFilter(btn.dataset.filter));
 });
 
 onSnapshot(query(collection(db, "posts"), orderBy("time", "desc")), (snap) => {
   allPosts = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-  if (currentView === "visit") {
-    renderVisit();
-  } else {
+  if (document.getElementById("feed-view")?.style.display !== "none") {
     renderFeed();
   }
 });
+
+window.showView = (viewName) => {
+  document.querySelectorAll(".view").forEach((v) => {
+    v.style.display = "none";
+  });
+
+  const view = document.getElementById(`${viewName}-view`);
+  if (view) view.style.display = "block";
+
+  document.querySelectorAll(".nav-link").forEach((nav) => nav.classList.remove("active"));
+  if (viewName === "feed") document.getElementById("nav-home")?.classList.add("active");
+  if (viewName === "about") document.getElementById("nav-about")?.classList.add("active");
+  if (viewName === "profile") profileBtn?.classList.add("active");
+
+  if (viewName !== "visit" && visitPostsUnsub) {
+    visitPostsUnsub();
+    visitPostsUnsub = null;
+  }
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
