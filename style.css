@@ -12,18 +12,17 @@ body {
     background: var(--bg); 
     color: var(--text-main); 
     min-height: 100vh; 
-    transition: 0.3s; 
 }
 
 /* --- VIEW MANAGER --- */
-#feed-view, #profile-view, #visit-view { 
+#feed-view, #profile-view, #visit-view, #about-view { 
     padding: 30px 8%; 
     max-width: 700px; 
     margin: 0 auto; 
     display: none; 
 }
 
-#feed-view { display: block; } /* Show Home by default */
+#feed-view { display: block; }
 
 nav { 
     display: flex; 
@@ -51,7 +50,7 @@ nav {
     -webkit-text-fill-color: transparent;
 }
 
-.nav-link { cursor: pointer; font-weight: 600; font-size: 0.85rem; color: var(--text-dim); margin-right: 15px; }
+.nav-link { cursor: pointer; font-weight: 600; font-size: 0.85rem; color: var(--text-dim); margin-right: 15px; transition: 0.2s; }
 .nav-link:hover { color: var(--accent); }
 
 .post { 
@@ -64,29 +63,24 @@ nav {
     position: relative;
 }
 
+/* Legal Box inside About Page */
+.legal-box {
+    margin-top: 30px;
+    padding: 15px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 12px;
+    border-left: 4px solid var(--accent);
+}
+.legal-box h4 { margin: 0 0 10px 0; font-size: 0.9rem; }
+.legal-box p { font-size: 0.75rem; margin: 5px 0; opacity: 0.7; }
+
 .post-img { width: 100%; border-radius: 12px; margin: 16px 0; object-fit: cover; max-height: 400px; }
-
 .input-box { background: rgba(128,128,128,0.05); border: 1px solid rgba(128,128,128,0.1); color: var(--text-main); padding: 12px; border-radius: 12px; width: 100%; margin-bottom: 10px; box-sizing: border-box; font-family: inherit; }
-.input-box:focus { border-color: var(--accent); outline: none; }
-
 .btn-primary { background: var(--accent); color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; width: 100%; transition: 0.2s; }
 .btn-primary:hover { opacity: 0.9; transform: scale(0.98); }
-
 .profile-avatar { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--accent); object-fit: cover; margin-bottom: 15px; }
-
-.delete-btn {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    background: none;
-    border: none;
-    color: #ef4444;
-    cursor: pointer;
-    font-size: 0.9rem;
-    opacity: 0.5;
-}
+.delete-btn { position: absolute; top: 20px; right: 20px; background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.9rem; opacity: 0.5; }
 .delete-btn:hover { opacity: 1; }
-
 .reply-item { background: rgba(128,128,128,0.05); padding: 10px; border-radius: 10px; margin-top: 8px; font-size: 0.85rem; border-left: 3px solid var(--accent); }
 .visit-bio { color: var(--text-dim); margin: 5px 0; font-style: italic; }
 .visit-dept { font-weight: bold; color: var(--accent); font-size: 0.85rem; text-transform: uppercase; }
