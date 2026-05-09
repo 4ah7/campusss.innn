@@ -20,9 +20,27 @@ const provider = new GoogleAuthProvider();
 
 let currentUser = null;
 
-// --- RENDER ENGINE ---
+// --- NAVIGATION ENGINE ---
+window.showView = (v) => {
+    console.log("Switching to view:", v); // Debugging line
+    const views = ['feed-view', 'profile-view', 'visit-view', 'about-view'];
+    
+    views.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.setProperty('display', 'none', 'important');
+    });
+
+    const target = document.getElementById(`${v}-view`);
+    if (target) {
+        target.style.setProperty('display', 'block', 'important');
+        window.scrollTo(0,0);
+    }
+};
+
+// --- RENDER POSTS ---
 function renderPosts(snap, targetId) {
     const box = document.getElementById(targetId);
+    if(!box) return;
     box.innerHTML = ""; 
 
     snap.forEach(pDoc => {
@@ -85,19 +103,13 @@ function renderPosts(snap, targetId) {
     });
 }
 
-// --- UPDATED VIEW MANAGER ---
-window.showView = (v) => {
-    ['feed-view', 'profile-view', 'visit-view', 'about-view'].forEach(id => {
-        document.getElementById(id).style.display = 'none';
-    });
-    document.getElementById(`${v}-view`).style.display = 'block';
-};
-
 window.login = () => signInWithPopup(auth, provider);
 window.logout = () => signOut(auth).then(() => location.reload());
 
 window.visitProfile = async (uid) => {
-    document.getElementById('v-posts').innerHTML = "Loading posts...";
+    const vPosts = document.getElementById('v-posts');
+    if(vPosts) vPosts.innerHTML = "Loading posts...";
+    
     const uDoc = await getDoc(doc(db, "users", uid));
     if(uDoc.exists()) {
         const data = uDoc.data();
