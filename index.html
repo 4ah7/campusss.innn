@@ -1,101 +1,168 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Campus Inn | Digital Campus Hub</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Campus Inn | Digital Campus Hub</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
 <nav>
-    <div class="logo" onclick="showView('feed')">
-        <img src="logo.svg" alt="" width="32" height="32">
-        <span>Campus Inn</span>
-    </div>
-    <div class="nav-actions">
-        <span class="nav-link" onclick="showView('feed')">Home</span>
-        <span class="nav-link" onclick="showView('about')">About</span>
-        <span class="nav-link" id="profile-btn" style="display:none;" onclick="showView('profile')">Profile</span>
-        <div id="authArea"></div>
-    </div>
+  <div class="logo" onclick="showView('feed')">
+    <img src="logo.svg" alt="" width="32" height="32" onerror="this.style.display='none'">
+    <span>Campus Inn</span>
+  </div>
+
+  <div class="nav-actions">
+    <span class="nav-link active" id="nav-home" onclick="showView('feed')">Home</span>
+    <span class="nav-link" id="nav-about" onclick="showView('about')">About</span>
+    <span class="nav-link" id="profile-btn" style="display:none;" onclick="showView('profile')">Profile</span>
+    <div id="authArea"></div>
+  </div>
 </nav>
 
 <main class="container">
-    <!-- FEED VIEW -->
-    <div id="feed-view" class="view">
-        <div id="editor" style="display:none;" class="post-composer">
-            <input id="postTitle" class="input-box title-input" placeholder="Give it a catchy title...">
-            <textarea id="postContent" class="input-box content-input" placeholder="What's happening on campus?"></textarea>
-            <div class="composer-actions">
-                <label class="file-label">
-                    <i class="fas fa-image"></i> Add Media
-                    <input type="file" id="postFile" accept="image/*" hidden>
-                </label>
-                <button onclick="addPost()" id="uploadBtn" class="btn-primary">Post Update</button>
-            </div>
+
+  <!-- FEED VIEW -->
+  <section id="feed-view" class="view" style="display:block;">
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow">Realtime campus updates</span>
+        <h1>News, notices, alerts, and student updates in one place.</h1>
+        <p>
+          Campus Inn helps students and departments share important updates, images, replies, and profile activity in a clean, real-time feed.
+        </p>
+
+        <div class="hero-actions">
+          <button class="btn-primary" onclick="document.getElementById('editor').scrollIntoView({behavior:'smooth'})">Post an Update</button>
+          <button class="btn-secondary" onclick="showView('about')">Learn More</button>
         </div>
-        <div id="posts">
-            <!-- Skeleton loaders appear here while loading -->
-            <div class="skeleton-post"></div>
-            <div class="skeleton-post"></div>
+      </div>
+
+      <div class="hero-panel">
+        <div class="hero-stat">
+          <strong>Realtime</strong>
+          <span>Live Firestore feed</span>
         </div>
+        <div class="hero-stat">
+          <strong>Secure Login</strong>
+          <span>Google Auth</span>
+        </div>
+        <div class="hero-stat">
+          <strong>Media Posts</strong>
+          <span>Image upload support</span>
+        </div>
+      </div>
+    </section>
+
+    <div id="editor" class="post-composer" style="display:none;">
+      <div class="post">
+        <h3 class="section-title">Share something useful</h3>
+
+        <input id="postTitle" class="input-box" placeholder="Headline or title">
+        <textarea id="postContent" class="input-box" placeholder="What's happening on campus?"></textarea>
+
+        <select id="postType" class="input-box">
+          <option value="General">💬 General</option>
+          <option value="News">📰 News</option>
+          <option value="Notice">📌 Notice</option>
+          <option value="Alert">🚨 Breaking Alert</option>
+        </select>
+
+        <label class="file-label">
+          <i class="fas fa-image"></i> Add Media (optional)
+          <input type="file" id="postFile" accept="image/*" hidden>
+        </label>
+
+        <button onclick="addPost()" id="uploadBtn" class="btn-primary">Post Update</button>
+      </div>
     </div>
 
-    <!-- ABOUT VIEW -->
-    <div id="about-view" class="view">
-        <div class="post about-card">
-            <div class="badge">PLATFORM</div>
-            <h2>Connecting the Campus</h2>
-            <p>Campus Inn is a next-generation social layer built specifically for the university ecosystem. We believe that information should flow freely between departments and student bodies.</p>
-            
-            <div class="feature-grid">
-                <div class="f-item"><i class="fas fa-bolt"></i> <span>Real-time Updates</span></div>
-                <div class="f-item"><i class="fas fa-shield-alt"></i> <span>Secure & Private</span></div>
-                <div class="f-item"><i class="fas fa-users"></i> <span>Student Driven</span></div>
-            </div>
+    <div class="toolbar">
+      <input id="searchBar" class="input-box search-input" placeholder="Search notices, news, alerts, users...">
 
-            <div class="legal-box">
-                <h4>Copyright & Compliance</h4>
-                <p>© 2026 Campus Inn. All rights reserved.</p>
-                <p>Version 1.1.0 Stable Build</p>
-            </div>
-        </div>
+      <div class="filters">
+        <button class="filter-chip active" data-filter="All">All</button>
+        <button class="filter-chip" data-filter="Notice">Notice</button>
+        <button class="filter-chip" data-filter="News">News</button>
+        <button class="filter-chip" data-filter="Alert">Alert</button>
+        <button class="filter-chip" data-filter="General">General</button>
+      </div>
     </div>
 
-    <!-- PROFILE VIEW -->
-    <div id="profile-view" class="view">
-        <div class="post profile-edit-card">
-            <div class="profile-header">
-                <img id="p-img" class="profile-avatar">
-                <h2 id="p-name"></h2>
-            </div>
-            <div class="form-group">
-                <label>Professional Bio</label>
-                <input id="u-bio" class="input-box" placeholder="Short bio...">
-            </div>
-            <div class="form-group">
-                <label>University Department</label>
-                <input id="u-dept" class="input-box" placeholder="e.g. Engineering">
-            </div>
-            <button onclick="saveProfile()" class="btn-primary">Save Profile</button>
-            <button onclick="logout()" class="logout-btn">Sign Out</button>
-        </div>
+    <div id="posts">
+      <div class="skeleton-post"></div>
+      <div class="skeleton-post"></div>
+    </div>
+  </section>
+
+  <!-- ABOUT VIEW -->
+  <section id="about-view" class="view">
+    <div class="post about-card">
+      <span class="badge badge-general">PLATFORM</span>
+      <h2>Connecting the Campus</h2>
+      <p>
+        Campus Inn is a digital campus communication hub designed for notices, updates, news, and student interaction.
+        It brings together posts, profiles, replies, and images in one clean system.
+      </p>
+
+      <div class="feature-grid">
+        <div class="feature-card"><i class="fas fa-bolt"></i><span>Realtime updates</span></div>
+        <div class="feature-card"><i class="fas fa-shield-alt"></i><span>Google login</span></div>
+        <div class="feature-card"><i class="fas fa-image"></i><span>Image uploads</span></div>
+        <div class="feature-card"><i class="fas fa-comments"></i><span>Replies</span></div>
+      </div>
+
+      <div class="legal-box">
+        <h4>Project Use</h4>
+        <p>Ideal for campus notices, news sharing, department updates, and student discussion.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROFILE VIEW -->
+  <section id="profile-view" class="view">
+    <div class="post profile-edit-card">
+      <div class="profile-header">
+        <img id="p-img" class="profile-avatar" alt="Profile">
+        <h2 id="p-name"></h2>
+      </div>
+
+      <div class="form-group">
+        <label>Professional Bio</label>
+        <input id="u-bio" class="input-box" placeholder="Short bio...">
+      </div>
+
+      <div class="form-group">
+        <label>University Department</label>
+        <input id="u-dept" class="input-box" placeholder="e.g. Engineering">
+      </div>
+
+      <button onclick="saveProfile()" class="btn-primary">Save Profile</button>
+      <button onclick="logout()" class="logout-btn">Sign Out</button>
+    </div>
+  </section>
+
+  <!-- VISIT VIEW -->
+  <section id="visit-view" class="view">
+    <div class="post visitor-card">
+      <button class="back-link" onclick="showView('feed')"><i class="fas fa-arrow-left"></i> Back to feed</button>
+      <img id="v-img" class="profile-avatar large" alt="User">
+      <h2 id="v-name"></h2>
+      <p id="v-bio" class="visit-bio"></p>
+      <span id="v-dept" class="visit-dept-tag"></span>
     </div>
 
-    <!-- VISIT VIEW -->
-    <div id="visit-view" class="view">
-        <div class="post visitor-card">
-            <img id="v-img" class="profile-avatar large">
-            <h2 id="v-name"></h2>
-            <p id="v-bio" class="visit-bio"></p>
-            <span id="v-dept" class="visit-dept-tag"></span>
-        </div>
-        <div class="section-divider">Recent Activity</div>
-        <div id="v-posts"></div>
-    </div>
+    <div class="section-divider">Recent Activity</div>
+    <div id="v-posts"></div>
+  </section>
+
+  <footer class="footer">
+    <p>© 2026 Campus Inn. Built for campus communication.</p>
+  </footer>
 </main>
 
 <script type="module" src="app.js"></script>
