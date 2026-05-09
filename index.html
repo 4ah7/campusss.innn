@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Campus Inn</title>
+    <title>Campus Inn | Digital Campus Hub</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
@@ -12,10 +12,10 @@
 
 <nav>
     <div class="logo" onclick="showView('feed')">
-        <img src="logo.svg" alt="Logo" width="35" height="35">
+        <img src="logo.svg" alt="" width="32" height="32">
         <span>Campus Inn</span>
     </div>
-    <div style="display:flex; align-items:center;">
+    <div class="nav-actions">
         <span class="nav-link" onclick="showView('feed')">Home</span>
         <span class="nav-link" onclick="showView('about')">About</span>
         <span class="nav-link" id="profile-btn" style="display:none;" onclick="showView('profile')">Profile</span>
@@ -23,62 +23,80 @@
     </div>
 </nav>
 
-<!-- SECTION 1: HOME FEED -->
-<div id="feed-view">
-    <div id="editor" style="display:none; margin-bottom: 30px;">
-        <div class="post">
-            <input id="postTitle" class="input-box" placeholder="What's the headline?">
-            <textarea id="postContent" class="input-box" style="height:80px" placeholder="Details..."></textarea>
-            <input type="file" id="postFile" class="input-box" accept="image/*">
-            <button onclick="addPost()" id="uploadBtn" class="btn-primary">Post to Campus</button>
+<main class="container">
+    <!-- FEED VIEW -->
+    <div id="feed-view" class="view">
+        <div id="editor" style="display:none;" class="post-composer">
+            <input id="postTitle" class="input-box title-input" placeholder="Give it a catchy title...">
+            <textarea id="postContent" class="input-box content-input" placeholder="What's happening on campus?"></textarea>
+            <div class="composer-actions">
+                <label class="file-label">
+                    <i class="fas fa-image"></i> Add Media
+                    <input type="file" id="postFile" accept="image/*" hidden>
+                </label>
+                <button onclick="addPost()" id="uploadBtn" class="btn-primary">Post Update</button>
+            </div>
+        </div>
+        <div id="posts">
+            <!-- Skeleton loaders appear here while loading -->
+            <div class="skeleton-post"></div>
+            <div class="skeleton-post"></div>
         </div>
     </div>
-    <div id="posts"></div>
-</div>
 
-<!-- SECTION 2: ABOUT PAGE -->
-<div id="about-view">
-    <div class="post">
-        <h2 style="color: var(--accent); margin-top: 0;">About Campus Inn</h2>
-        <p>Welcome to the digital heart of our campus. <strong>Campus Inn</strong> was built to bridge the gap between students, faculty, and university life.</p>
-        <div class="legal-box">
-            <h4>Copyright & Legal</h4>
-            <p>© 2026 Campus Inn. All rights reserved.</p>
-            <p>Unauthorized duplication of user data is strictly prohibited.</p>
-        </div>
-        <div style="text-align: center; margin-top: 40px; opacity: 0.5; font-size: 0.8rem;">
-            <p>Version 1.0.2 | Made with ❤️ for the Campus</p>
+    <!-- ABOUT VIEW -->
+    <div id="about-view" class="view">
+        <div class="post about-card">
+            <div class="badge">PLATFORM</div>
+            <h2>Connecting the Campus</h2>
+            <p>Campus Inn is a next-generation social layer built specifically for the university ecosystem. We believe that information should flow freely between departments and student bodies.</p>
+            
+            <div class="feature-grid">
+                <div class="f-item"><i class="fas fa-bolt"></i> <span>Real-time Updates</span></div>
+                <div class="f-item"><i class="fas fa-shield-alt"></i> <span>Secure & Private</span></div>
+                <div class="f-item"><i class="fas fa-users"></i> <span>Student Driven</span></div>
+            </div>
+
+            <div class="legal-box">
+                <h4>Copyright & Compliance</h4>
+                <p>© 2026 Campus Inn. All rights reserved.</p>
+                <p>Version 1.1.0 Stable Build</p>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- SECTION 3: OWN PROFILE -->
-<div id="profile-view">
-    <div class="post" style="text-align:center;">
-        <img id="p-img" class="profile-avatar">
-        <h2 id="p-name" style="margin:0"></h2>
-        <div style="text-align:left; margin-top:25px;">
-            <label>Bio</label>
-            <input id="u-bio" class="input-box" placeholder="Tell us about yourself...">
-            <label>Major/Department</label>
-            <input id="u-dept" class="input-box" placeholder="e.g. Computer Science">
-            <button onclick="saveProfile()" class="btn-primary">Save Changes</button>
+    <!-- PROFILE VIEW -->
+    <div id="profile-view" class="view">
+        <div class="post profile-edit-card">
+            <div class="profile-header">
+                <img id="p-img" class="profile-avatar">
+                <h2 id="p-name"></h2>
+            </div>
+            <div class="form-group">
+                <label>Professional Bio</label>
+                <input id="u-bio" class="input-box" placeholder="Short bio...">
+            </div>
+            <div class="form-group">
+                <label>University Department</label>
+                <input id="u-dept" class="input-box" placeholder="e.g. Engineering">
+            </div>
+            <button onclick="saveProfile()" class="btn-primary">Save Profile</button>
             <button onclick="logout()" class="logout-btn">Sign Out</button>
         </div>
     </div>
-</div>
 
-<!-- SECTION 4: VISIT OTHERS -->
-<div id="visit-view">
-    <div class="post" style="text-align:center;">
-        <img id="v-img" class="profile-avatar" style="border:2px solid var(--text-dim)">
-        <h2 id="v-name" style="margin:0"></h2>
-        <p id="v-bio" class="visit-bio"></p>
-        <p id="v-dept" class="visit-dept"></p>
+    <!-- VISIT VIEW -->
+    <div id="visit-view" class="view">
+        <div class="post visitor-card">
+            <img id="v-img" class="profile-avatar large">
+            <h2 id="v-name"></h2>
+            <p id="v-bio" class="visit-bio"></p>
+            <span id="v-dept" class="visit-dept-tag"></span>
+        </div>
+        <div class="section-divider">Recent Activity</div>
+        <div id="v-posts"></div>
     </div>
-    <h3 style="margin: 20px 0; font-size: 0.9rem; color: var(--accent);">USER POSTS</h3>
-    <div id="v-posts"></div>
-</div>
+</main>
 
 <script type="module" src="app.js"></script>
 </body>
